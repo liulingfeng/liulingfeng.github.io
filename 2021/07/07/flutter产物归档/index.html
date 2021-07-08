@@ -1,0 +1,559 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="flutter 的接入方式以及多插件如何进行产物管理">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+  <title>『全网独一份』Flutter混合工程一键打aar上传Artifactory - 刘小帅的技术分享</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>刘小帅的博客</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/banner_3.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="『全网独一份』Flutter混合工程一键打aar上传Artifactory">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-07-07 17:23" pubdate>
+        2021年7月7日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.1k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      43
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">『全网独一份』Flutter混合工程一键打aar上传Artifactory</h1>
+            
+            <div class="markdown-body">
+              <h2 id="官方方案"><a href="#官方方案" class="headerlink" title="官方方案"></a>官方方案</h2><p>首先我们先看一下官方提供的混合工程接入方案，链接地址<a target="_blank" rel="noopener" href="https://flutter.dev/docs/development/add-to-app/android/project-setup">https://flutter.dev/docs/development/add-to-app/android/project-setup</a> 总共提供两种接入方式：</p>
+<ul>
+<li>以module方式接入</li>
+<li>以本地maven方式接入</li>
+</ul>
+<p>两种接入方式都比较简单，前提都是<strong>先创建Flutter Module</strong>（flutter相关代码写在这边）。</p>
+<p><img src="/img/flutter_a_1.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="以module方式接入"><a href="#以module方式接入" class="headerlink" title="以module方式接入"></a>以module方式接入</h3><p>以module方式接入首先在Android工程的settings.gradle加入:</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs gradle">setBinding(<span class="hljs-keyword">new</span> Binding([gradle: <span class="hljs-keyword">this</span>]))                                <br>evaluate(<span class="hljs-keyword">new</span> <span class="hljs-keyword">File</span>(                                                     <br>  settingsDir.parentFile,                                              <br>  <span class="hljs-string">&#x27;my_flutter/.android/include_flutter.groovy&#x27;</span>    <span class="hljs-comment">//注意这边flutter module路径的正确性                     </span><br>))   <br></code></pre></td></tr></table></figure>
+<p>这时候工程中就会很神奇的多出一个flutter module，在工程中引入这个flutter module就可以了。例如在app的build.gradle中添加:</p>
+<figure class="highlight isbl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs isbl"><span class="hljs-variable">implementation</span> <span class="hljs-function"><span class="hljs-title">project</span>(<span class="hljs-string">&#x27;:flutter&#x27;</span>)</span><br></code></pre></td></tr></table></figure>
+<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p>setBinding和evaluate都是groovy语法，这里所做的事就是运行 include_flutter.groovy 脚本；而setBinding的作用是把gradle环境传入include_flutter.groovy内（因为里面需要使用到gradle环境）。运行groovy文件，文件运行在一个Script对象中，Script有一个属性binding，内部存储了当前环境的变量（包括当前脚本声明的变量与启动脚本传入的参数），evaluate执行时会把当前脚本的binding传入下一个脚本。下面是include_flutter.groovy中的关键代码:</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs gradle">gradle.<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;:flutter&quot;</span><br>gradle.<span class="hljs-keyword">project</span>(<span class="hljs-string">&quot;:flutter&quot;</span>).projectDir = <span class="hljs-keyword">new</span> <span class="hljs-keyword">File</span>(flutterProjectRoot, <span class="hljs-string">&quot;.android/Flutter&quot;</span>)<br><span class="hljs-keyword">def</span> flutterSdkPath = properties.getProperty(<span class="hljs-string">&quot;flutter.sdk&quot;</span>)<br>gradle.apply <span class="hljs-keyword">from</span>: <span class="hljs-string">&quot;$flutterSdkPath/packages/flutter_tools/gradle/module_plugin_loader.gradle&quot;</span><br></code></pre></td></tr></table></figure>
+<p>添加flutter module到Android工程中，导入module_plugin_loader.gradle脚本片段。简单看一下module_plugin_loader.gradle中的关键代码</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">def pluginsFile = <span class="hljs-keyword">new</span> <span class="hljs-constructor">File(<span class="hljs-params">moduleProjectRoot</span>, &#x27;.<span class="hljs-params">flutter</span>-<span class="hljs-params">plugins</span>-<span class="hljs-params">dependencies</span>&#x27;)</span><br><span class="hljs-keyword">if</span> (pluginsFile.exists<span class="hljs-literal">()</span>) &#123;<br>    def <span class="hljs-keyword">object</span> = <span class="hljs-keyword">new</span> <span class="hljs-constructor">JsonSlurper()</span>.parse<span class="hljs-constructor">Text(<span class="hljs-params">pluginsFile</span>.<span class="hljs-params">text</span>)</span><br>    <span class="hljs-keyword">object</span>.plugins.android.each &#123; androidPlugin -&gt;<br>        def pluginDirectory = <span class="hljs-keyword">new</span> <span class="hljs-constructor">File(<span class="hljs-params">androidPlugin</span>.<span class="hljs-params">path</span>, &#x27;<span class="hljs-params">android</span>&#x27;)</span><br>        <span class="hljs-keyword">include</span> <span class="hljs-string">&quot;:$&#123;androidPlugin.name&#125;&quot;</span><br>        project(<span class="hljs-string">&quot;:$&#123;androidPlugin.name&#125;&quot;</span>).projectDir = pluginDirectory<br>    &#125;<br>&#125;  <br></code></pre></td></tr></table></figure>
+<p>简单的说就是添加所有插件module到Android工程中，那么这些插件module从哪里来。插个题外话讲一下flutter的<strong>插件管理</strong>，官方的插件托管平台是<a target="_blank" rel="noopener" href="https://pub.dev,/">https://pub.dev，</a><br>flutter是用配置文件pubspec.yaml来管理三方插件的（类似于前端的npm）,配置某个三方依赖类似如下：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">dependencies</span>:<br>  <span class="hljs-attribute">path_provider</span>: ^<span class="hljs-number">1</span>.<span class="hljs-number">6</span>.<span class="hljs-number">18</span><br></code></pre></td></tr></table></figure>
+<p>然后执行Pub.get，会做两件事情：</p>
+<ul>
+<li>把插件的源代码下载到本地，具体位置在<strong>flutterRoot/.pub-cache</strong>目录下</li>
+<li>更新.flutter-plugins和.flutter-plugins-dependencies文件</li>
+</ul>
+<p>.flutter-plugins和.flutter-plugins-dependencies以json的形式存储了插件名字和对应的本地工程地址，上面添加插件module到Android工程有用到，看一眼里面存储的东西:</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">path_provider_macos=<span class="hljs-regexp">/Users/</span>liuxiaoshuai<span class="hljs-regexp">/flutter/</span>.pub-cache<span class="hljs-regexp">/hosted/</span>pub.flutter-io.cn<span class="hljs-regexp">/path_provider_macos-0.0.4+3/</span><br></code></pre></td></tr></table></figure>
+<p>pub管理不像gradle依赖管理那么智能，一定要注意<strong>冲突的处理！</strong></p>
+<p>总结一下settings.gradle添加配置所做的事:</p>
+<ol>
+<li>include FlutterModule中的.android/Flutter工程</li>
+<li>include FlutterModule中.flutter-plugins文件中包含的Flutter工程路径下的android module</li>
+<li>配置所有工程的build.gradle配置执行阶段都依赖于:flutter工程，也即它最先执行配置阶段</li>
+</ol>
+<p>所有的module都加进来了，总感觉差点什么：我们在FlutterModule中写的dart代码以及引擎是怎么加入到Android工程中的呢？答案藏在flutter module的build.gradle中，里面有一句特别关键的代码</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs gradle"><span class="hljs-keyword">def</span> flutterRoot = localProperties.getProperty(<span class="hljs-string">&#x27;flutter.sdk&#x27;</span>)<br>apply <span class="hljs-keyword">from</span>: <span class="hljs-string">&quot;$flutterRoot/packages/flutter_tools/gradle/flutter.gradle&quot;</span><br></code></pre></td></tr></table></figure>
+<p>剩余的所有工作在flutter.gradle中做，flutter.gradle中的代码太长，我这里就不贴了，但是里面的代码<strong>特别重要</strong>，记得去看。这里先总结一下内部所做的事:</p>
+<ol>
+<li>选择符合对应架构的Flutter引擎</li>
+<li>插入Flutter Plugin的编译依赖（默认aar依赖）</li>
+<li>Hook mergeAssets/processResources Task，预先执行FlutterTask，调用flutter命令编译Dart层代码构建出flutter_assets产物，并拷贝到assets目录下（dart代码产物）</li>
+</ol>
+<p>到这里插件和dart代码都添加到了Android工程中</p>
+<h3 id="以本地maven方式接入"><a href="#以本地maven方式接入" class="headerlink" title="以本地maven方式接入"></a>以本地maven方式接入</h3><p>首先通过flutter shell脚本打出对应的产物，常用命令如下:</p>
+<ul>
+<li>flutter build aar</li>
+<li>flutter build aar –no-debug –no-profile //只打release产物</li>
+<li>flutter build aar–build-number=2.0 //版本控制</li>
+</ul>
+<p>执行命令之后在下图所示位置查看产物:</p>
+<p><img src="/img/flutter_a_2.png" srcset="/img/loading.gif" lazyload></p>
+<p>接下来使用产物，settings.gradle中就不需要做额外的配置了：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-section">repositories</span> &#123;<br>  <span class="hljs-section">maven</span> &#123;<br>    <span class="hljs-attribute">url</span> <span class="hljs-string">&#x27;../FlutterModule/build/host/outputs/repo&#x27;</span> //注意路径的正确性<br>  &#125;<br>&#125;<br>dependencies &#123;<br>  <span class="hljs-attribute">implementation</span> <span class="hljs-string">&#x27;com.example.flutter_module:flutter_release:1.0&#x27;</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="官方方案缺陷"><a href="#官方方案缺陷" class="headerlink" title="官方方案缺陷"></a>官方方案缺陷</h2><p>以module方式接入：</p>
+<ol>
+<li>需要团队成员都安装有flutter开发环境，对于不开发flutter的同学侵入性太大；同时对于新来的同学需要安装的环境变多，加大了负担。</li>
+<li>需要修改ci流程，原先ci流程中肯定是不包含flutter流程的。</li>
+</ol>
+<p>以本地maven的方式接入：</p>
+<ol>
+<li>版本不好管理</li>
+<li>需要把本地产物拷贝给其他不开发flutter的同学，否则本质上还是需要安装flutter开发环境。</li>
+</ol>
+<p>那么考虑能不能利用flutter build aar打出的产物，将产物提交到公司的私仓，这样所有同学就都能正常下载使用了。理论上这个方案是可行的，遍历build/host/outputs/repo下所有的文件夹，然后将产物依次提交。方案没有实践过，大家可以试试。</p>
+<h2 id="全新的方案"><a href="#全新的方案" class="headerlink" title="全新的方案"></a>全新的方案</h2><p>我的方案是自己插手产物的构建和上传，整套操作是一个shell脚本，同时会依赖于外部的配置。</p>
+<p><img src="/img/flutter_a_3.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="第一个配置文件gradle-properties"><a href="#第一个配置文件gradle-properties" class="headerlink" title="第一个配置文件gradle.properties"></a>第一个配置文件gradle.properties</h4><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-comment"># 远程maven url和账号</span><br><span class="hljs-attr">MAVEN_URL</span>=http://<span class="hljs-number">172.16</span>.<span class="hljs-number">9.30</span>:<span class="hljs-number">8081</span>/artifactory/<br><span class="hljs-attr">MAVEN_ACCOUNT_NAME</span>=***<br><span class="hljs-attr">MAVEN_ACCOUNT_PWD</span>=***<br><br><span class="hljs-attr">GROUP</span>=com.lxs.flutter<br><span class="hljs-attr">VERSION_NAME</span>=<span class="hljs-number">0.0</span>.<span class="hljs-number">8</span><br></code></pre></td></tr></table></figure>
+<p>用于设置私仓的地址、用户名、密码。产物的group、版本</p>
+<h4 id="第二个配置文件build-gradle"><a href="#第二个配置文件build-gradle" class="headerlink" title="第二个配置文件build.gradle"></a>第二个配置文件build.gradle</h4><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs gradle"><span class="hljs-keyword">buildscript</span> &#123;<br>    <span class="hljs-keyword">repositories</span> &#123;<br>        google()<br>        jcenter()<br>    &#125;<br><br>    <span class="hljs-keyword">dependencies</span> &#123;<br>        <span class="hljs-keyword">classpath</span> <span class="hljs-string">&#x27;com.android.tools.build:gradle:3.5.0&#x27;</span><br>        <span class="hljs-keyword">classpath</span> <span class="hljs-string">&quot;org.jfrog.buildinfo:build-info-extractor-gradle:4.8.1&quot;</span><br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">allprojects</span> &#123;<br>    <span class="hljs-keyword">repositories</span> &#123;<br>        google()<br>        jcenter()<br>    &#125;<br>    apply plugin: <span class="hljs-string">&#x27;com.jfrog.artifactory&#x27;</span><br>    apply plugin: <span class="hljs-string">&#x27;maven-publish&#x27;</span><br>&#125;<br><br><span class="hljs-keyword">task</span> clean(type: <span class="hljs-keyword">Delete</span>) &#123;<br>    <span class="hljs-keyword">delete</span> rootProject.buildDir<br>&#125;<br><br><span class="hljs-keyword">subprojects</span> &#123;<br>    <span class="hljs-keyword">project</span>.afterEvaluate &#123;<br>        <span class="hljs-keyword">project</span>.plugins.withId(<span class="hljs-string">&#x27;com.android.library&#x27;</span>) &#123;<br>            <span class="hljs-keyword">project</span>.<span class="hljs-keyword">group</span> = <span class="hljs-keyword">GROUP</span><br>            <span class="hljs-keyword">project</span>.version = VERSION_NAME<br>            <span class="hljs-keyword">def</span> mavenScriptPath = <span class="hljs-keyword">project</span>.rootProject.<span class="hljs-keyword">file</span>(<span class="hljs-string">&#x27;./config/flutter_jfrog.gradle&#x27;</span>)<br>            <span class="hljs-keyword">project</span>.apply <span class="hljs-keyword">from</span>: mavenScriptPath<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>注意.android目录在每次pub get之后会重新构建，所以不能直接在.android工程中修改，这里直接用外部配置文件覆盖的方式。因为产物的上传需要依赖jfrog插件，所以build.gradle中做了jfrog的相应配置。还有一点就是group和version的矫正，因为flutter module中添加插件二进制会使用到group和version。具体代码在flutter.gradle中</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">configurePluginAar</span><span class="hljs-params">(<span class="hljs-keyword">String</span> pluginName, <span class="hljs-keyword">String</span> pluginPath, Project project)</span> </span>&#123;<br>        <span class="hljs-built_in">File</span> pluginBuildFile = project.<span class="hljs-built_in">file</span>(Paths.<span class="hljs-built_in">get</span>(pluginPath, <span class="hljs-string">&quot;android&quot;</span>, <span class="hljs-string">&quot;build.gradle&quot;</span>));<br>        <span class="hljs-keyword">if</span> (!pluginBuildFile.<span class="hljs-built_in">exists</span>()) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">GradleException</span>(<span class="hljs-string">&quot;Plugin $pluginName doesn&#x27;t have the required file $pluginBuildFile.&quot;</span>)<br>        &#125;<br>        <br>        Matcher groupParts = GROUP_PATTERN.<span class="hljs-built_in">matcher</span>(pluginBuildFile.text)<br>        <span class="hljs-keyword">String</span> groupId = groupParts[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>]<br>        <span class="hljs-built_in">File</span> pluginSettings = project.<span class="hljs-built_in">file</span>(Paths.<span class="hljs-built_in">get</span>(pluginPath, <span class="hljs-string">&quot;android&quot;</span>, <span class="hljs-string">&quot;settings.gradle&quot;</span>));<br>        <span class="hljs-keyword">if</span> (!pluginSettings.<span class="hljs-built_in">exists</span>()) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">GradleException</span>(<span class="hljs-string">&quot;Plugin $pluginName doesn&#x27;t have the required file $pluginSettings.&quot;</span>)<br>        &#125;<br>        Matcher projectNameParts = PROJECT_NAME_PATTERN.<span class="hljs-built_in">matcher</span>(pluginSettings.text)<br>        <span class="hljs-keyword">String</span> artifactId = <span class="hljs-string">&quot;$&#123;projectNameParts[0][1]&#125;_release&quot;</span><br>        <br>        project.dependencies.<span class="hljs-built_in">add</span>(<span class="hljs-string">&quot;api&quot;</span>, <span class="hljs-string">&quot;$groupId:$artifactId:+&quot;</span>)<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="第三个配置文件flutter-jfrog-gradle"><a href="#第三个配置文件flutter-jfrog-gradle" class="headerlink" title="第三个配置文件flutter_jfrog.gradle"></a>第三个配置文件flutter_jfrog.gradle</h3><figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">import com.sun.tools.classfile.Dependency<br><br>task android<span class="hljs-constructor">SourcesJar(<span class="hljs-params">type</span>: Jar)</span> &#123;<br>    classifier = &#x27;sources&#x27;<br>    from android.sourceSets.main.java.srcDirs<br>&#125;<br><br>assemble.dependsOn androidSourcesJar<br><br>publishing &#123;<br>    publications &#123;<br>        aar(MavenPublication) &#123;<br>            groupId = GROUP<br>            version = VERSION_NAME<br>            artifactId = project.name<br>            artifact(<span class="hljs-string">&quot;$buildDir/outputs/aar/$&#123;project.getName()&#125;-release.aar&quot;</span>)<br>            artifact androidSourcesJar<br><br>            pom.withXml &#123;<br>                def dependenciesNode = <span class="hljs-keyword">as</span><span class="hljs-constructor">Node()</span>.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">dependencies</span>&#x27;)</span><br><br>                def compileTimeDependencies =<br>                        configurations.implementation.allDependencies.<span class="hljs-keyword">with</span><span class="hljs-constructor">Type(ModuleDependency)</span> +<br>                                configurations.releaseImplementation.allDependencies.<span class="hljs-keyword">with</span><span class="hljs-constructor">Type(ModuleDependency)</span><br><br>                append<span class="hljs-constructor">Dependencies(<span class="hljs-params">compileTimeDependencies</span>, <span class="hljs-params">dependenciesNode</span>)</span><br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br>artifactory &#123;<br>    contextUrl = MAVEN_URL<br>    publish &#123;<br>        repository &#123;<br>            repoKey = &#x27;gradle-dev-local&#x27;<br>            username = MAVEN_ACCOUNT_NAME<br>            password = MAVEN_ACCOUNT_PWD<br>        &#125;<br>        defaults &#123;<br>            <span class="hljs-comment">// Tell the Artifactory Plugin which artifacts should be published to Artifactory.</span><br>            publications(&#x27;aar&#x27;)<br>            publishArtifacts = <span class="hljs-literal">true</span><br>            <span class="hljs-comment">// Properties to be attached to the published artifacts.</span><br>            properties = <span class="hljs-literal">[&#x27;<span class="hljs-identifier">qa</span>.<span class="hljs-identifier">level</span>&#x27;: &#x27;<span class="hljs-identifier">basic</span>&#x27;, &#x27;<span class="hljs-identifier">dev</span>.<span class="hljs-identifier">team</span>&#x27;: &#x27;<span class="hljs-identifier">core</span>&#x27;]</span><br>            <span class="hljs-comment">// Publish generated POM files to Artifactory (true by default)</span><br>            publishPom = <span class="hljs-literal">true</span><br>        &#125;<br>    &#125;<br>&#125;<br><br>ext &#123;<br>    appendDependencies = &#123; Set&lt;Dependency&gt; compileTimeDependencies, dependenciesNode -&gt;<br><br>        compileTimeDependencies.each &#123;<br>            <span class="hljs-comment">// 过滤library引用</span><br>            <span class="hljs-keyword">if</span> (it.version != <span class="hljs-string">&quot;unspecified&quot;</span>) &#123;<br>                def dependencyNode = dependenciesNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">dependency</span>&#x27;)</span><br>                dependencyNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">groupId</span>&#x27;, <span class="hljs-params">it</span>.<span class="hljs-params">group</span>)</span><br>                dependencyNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">artifactId</span>&#x27;, <span class="hljs-params">it</span>.<span class="hljs-params">name</span>)</span><br>                dependencyNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">version</span>&#x27;, <span class="hljs-params">it</span>.<span class="hljs-params">version</span>)</span><br><br>                <span class="hljs-keyword">if</span> (!it.excludeRules.is<span class="hljs-constructor">Empty()</span>) &#123;<br>                    def exclusionsNode = dependencyNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">exclusions</span>&#x27;)</span><br>                    it.excludeRules.each &#123; rule -&gt;<br>                        def exclusionNode = exclusionsNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">exclusion</span>&#x27;)</span><br>                        exclusionNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">groupId</span>&#x27;, <span class="hljs-params">rule</span>.<span class="hljs-params">group</span>)</span><br>                        exclusionNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">artifactId</span>&#x27;, <span class="hljs-params">rule</span>.<span class="hljs-params">module</span> ?: &#x27;<span class="hljs-operator">*</span>&#x27;)</span><br>                    &#125;<br>                &#125;<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>主要是产物的收集和上传，implementation依赖中不包含releaseImplementation，需要注意<strong>聚合implementation和releaseImplementation</strong>。（因为flutter module中引擎的依赖方式是releaseImplementation）</p>
+<p>接下来分析脚本，第一步是版本号的更新。提供了两种方式：1.脚本参数 2.自动升级 添加了脚本参数的情况下取消自动升级</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs routeros"><span class="hljs-attribute">num</span>=<span class="hljs-variable">$#</span><br><span class="hljs-keyword">if</span> [ <span class="hljs-variable">$num</span> -eq 0 ];then<br>  updateVersion<br><span class="hljs-keyword">else</span><br>  <span class="hljs-attribute">v</span>=$(grep VERSION_NAME configs/gradle.properties|cut -d<span class="hljs-string">&#x27;=&#x27;</span> -f2)<br>  sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s/VERSION_NAME=&#x27;</span><span class="hljs-variable">$v</span><span class="hljs-string">&#x27;/VERSION_NAME=&#x27;</span><span class="hljs-variable">$1</span><span class="hljs-string">&#x27;/g&#x27;</span> configs/gradle.properties<br>  echo <span class="hljs-string">&#x27;更新版本号成功...&#x27;</span><br>fi<br></code></pre></td></tr></table></figure>
+<p>版本号自动升级，自动升级基于上次版本做加一操作</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">function</span> update<span class="hljs-constructor">Version()</span> &#123;<br>  v=<span class="hljs-constructor">$(<span class="hljs-params">grep</span> VERSION_NAME <span class="hljs-params">configs</span><span class="hljs-operator">/</span><span class="hljs-params">gradle</span>.<span class="hljs-params">properties</span>|<span class="hljs-params">cut</span> -<span class="hljs-params">d</span>&#x27;=&#x27; -<span class="hljs-params">f2</span>)</span><br>  echo 旧版本号$v<br>  v1=<span class="hljs-constructor">$(<span class="hljs-params">echo</span> | <span class="hljs-params">awk</span> &#x27;&#123;<span class="hljs-params">split</span>(<span class="hljs-string">&quot;&#x27;$v&#x27;&quot;</span>,<span class="hljs-params">array</span>,<span class="hljs-string">&quot;.&quot;</span>)</span>; print <span class="hljs-built_in">array</span><span class="hljs-literal">[<span class="hljs-number">1</span>]</span>&#125;&#x27;)<br>  v2=<span class="hljs-constructor">$(<span class="hljs-params">echo</span> | <span class="hljs-params">awk</span> &#x27;&#123;<span class="hljs-params">split</span>(<span class="hljs-string">&quot;&#x27;$v&#x27;&quot;</span>,<span class="hljs-params">array</span>,<span class="hljs-string">&quot;.&quot;</span>)</span>; print <span class="hljs-built_in">array</span><span class="hljs-literal">[<span class="hljs-number">2</span>]</span>&#125;&#x27;)<br>  v3=<span class="hljs-constructor">$(<span class="hljs-params">echo</span> | <span class="hljs-params">awk</span> &#x27;&#123;<span class="hljs-params">split</span>(<span class="hljs-string">&quot;&#x27;$v&#x27;&quot;</span>,<span class="hljs-params">array</span>,<span class="hljs-string">&quot;.&quot;</span>)</span>; print <span class="hljs-built_in">array</span><span class="hljs-literal">[<span class="hljs-number">3</span>]</span>&#125;&#x27;)<br>  y=<span class="hljs-constructor">$(<span class="hljs-params">expr</span> $<span class="hljs-params">v3</span> + 1)</span><br><br>  <span class="hljs-keyword">if</span> <span class="hljs-literal">[ <span class="hljs-identifier">$y</span> -<span class="hljs-identifier">ge</span> <span class="hljs-number">10</span> ]</span>;<span class="hljs-keyword">then</span><br>    y=<span class="hljs-constructor">$(<span class="hljs-params">expr</span> $<span class="hljs-params">y</span> % 10)</span><br>    v2=<span class="hljs-constructor">$(<span class="hljs-params">expr</span> $<span class="hljs-params">v2</span> + 1)</span><br>  fi<br><br>  <span class="hljs-keyword">if</span> <span class="hljs-literal">[ <span class="hljs-identifier">$v2</span> -<span class="hljs-identifier">ge</span> <span class="hljs-number">10</span> ]</span>;<span class="hljs-keyword">then</span><br>    v2=<span class="hljs-constructor">$(<span class="hljs-params">expr</span> $<span class="hljs-params">v2</span> % 10)</span><br>    v1=<span class="hljs-constructor">$(<span class="hljs-params">expr</span> $<span class="hljs-params">v1</span> + 1)</span><br>  fi<br><br>  vv=$v1<span class="hljs-string">&quot;.&quot;</span>$v2<span class="hljs-string">&quot;.&quot;</span>$y<br>  echo 新版本号$vv<br>  # 更新配置文件<br>  sed -i &#x27;<span class="hljs-character">&#x27; &#x27;</span>s/VERSION_NAME=&#x27;$v&#x27;/VERSION_NAME=&#x27;$vv&#x27;/g&#x27; configs/gradle.properties<br>  <span class="hljs-keyword">if</span> <span class="hljs-literal">[ <span class="hljs-identifier">$</span>? -<span class="hljs-identifier">eq</span> <span class="hljs-number">0</span> ]</span>; <span class="hljs-keyword">then</span><br>      echo &#x27;&#x27;<br>  <span class="hljs-keyword">else</span><br>      echo &#x27;更新版本号失败...&#x27;<br>      exit<br>  fi<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>第二步把配置copy到.android工程中</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs awk"><span class="hljs-keyword">if</span> [  -d <span class="hljs-string">&#x27;.android/config/&#x27;</span> ]; then<br>   echo <span class="hljs-string">&#x27;.android/config 文件夹已存在&#x27;</span><br><span class="hljs-keyword">else</span> :<br>   mkdir .android/config<br>fi<br><br>cp configs<span class="hljs-regexp">/gradle.properties .android/g</span>radle.properties<br>cp configs<span class="hljs-regexp">/flutter_jfrog.gradle .android/</span>config/flutter_jfrog.gradle<br>cp configs<span class="hljs-regexp">/build.gradle .android/</span>build.gradle<br></code></pre></td></tr></table></figure>
+<p>第三步各个plugin module单独打aar，构建收集产物上传</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> <span class="hljs-variable">$</span>(<span class="hljs-built_in">cat</span> .flutter<span class="hljs-literal">-plugins</span> | grep <span class="hljs-literal">-v</span> <span class="hljs-string">&#x27;^ *#&#x27;</span>)<br><span class="hljs-keyword">do</span><br>    plugin_name=<span class="hljs-variable">$</span>&#123;line%%=*&#125;<br>    plugin_path=<span class="hljs-variable">$</span>&#123;line<span class="hljs-comment">##*=&#125;</span><br>    res=<span class="hljs-variable">$</span>(doesSupportAndroidPlatform <span class="hljs-variable">$</span>&#123;plugin_path&#125;)<br>    <span class="hljs-keyword">if</span> [ <span class="hljs-variable">$res</span> -<span class="hljs-type">eq</span> <span class="hljs-number">0</span> ];then<br>      ./gradlew <span class="hljs-string">&quot;<span class="hljs-variable">$</span>&#123;plugin_name&#125;&quot;</span>:clean<br>      ./gradlew <span class="hljs-string">&quot;<span class="hljs-variable">$</span>&#123;plugin_name&#125;&quot;</span>:assembleRelease<br>      ./gradlew <span class="hljs-string">&quot;<span class="hljs-variable">$</span>&#123;plugin_name&#125;&quot;</span>:artifactoryPublish<br>    fi<br>done<br></code></pre></td></tr></table></figure>
+<p>第四步flutter module打aar，构建收集产物上传</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli"><span class="hljs-string">./gradlew</span> clean assembleRelease<br><span class="hljs-string">./gradlew</span> flutter<span class="hljs-function">:artifactoryPublish</span><br></code></pre></td></tr></table></figure>
+
+<p>产物上传到私仓之后就能正常使用了，使用方式和本地maven类似；还有一项工作就是源码和二进制切换的配置。开发阶段还是需要以module方式依赖的，因为调试和hot reload更加方便。工程远程分支保持二进制依赖，通过本地配置来打开源码依赖，这种方式侵入最小，这里就想到在local.properties中添加配置</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">flutterAar</span>=<span class="hljs-literal">false</span><br></code></pre></td></tr></table></figure>
+<p>settings.gradle中修改为</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs gradle"><span class="hljs-keyword">def</span> localProperties = readPropertiesIfExist(<span class="hljs-keyword">new</span> <span class="hljs-keyword">File</span>(<span class="hljs-string">&quot;local.properties&quot;</span>))<br><br><span class="hljs-keyword">if</span> (!localProperties.getProperty(<span class="hljs-string">&quot;flutterAar&quot;</span>, <span class="hljs-string">&quot;true&quot;</span>).toBoolean()) &#123;<br>    <span class="hljs-keyword">def</span> flutterFile = <span class="hljs-keyword">new</span> <span class="hljs-keyword">File</span>(settingsDir.parentFile,<br>            <span class="hljs-string">&#x27;flutter_module/.android/include_flutter.groovy&#x27;</span>)<br>    <span class="hljs-keyword">if</span> (flutterFile.exists()) &#123;<br>        setBinding(<span class="hljs-keyword">new</span> Binding([gradle: <span class="hljs-keyword">this</span>]))<br>        evaluate(flutterFile)<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> GradleException(<span class="hljs-string">&quot;flutter module does not exit,please check the path&quot;</span>)<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Properties readPropertiesIfExist(<span class="hljs-keyword">File</span> propertiesFile) &#123;<br>    Properties result = <span class="hljs-keyword">new</span> Properties()<br>    <span class="hljs-keyword">if</span> (propertiesFile.exists()) &#123;<br>        propertiesFile.<span class="hljs-keyword">withReader</span>(<span class="hljs-string">&#x27;UTF-8&#x27;</span>) &#123; reader -&gt; result.load(reader) &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> result<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>添加module的地方修改为</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs gradle"><span class="hljs-keyword">def</span> localProperties = readPropertiesIfExist(<span class="hljs-keyword">new</span> <span class="hljs-keyword">File</span>(<span class="hljs-string">&quot;local.properties&quot;</span>))<br><span class="hljs-keyword">def</span> flutterAar = localProperties.getProperty(<span class="hljs-string">&quot;flutterAar&quot;</span>, <span class="hljs-string">&quot;true&quot;</span>).toBoolean()<br><span class="hljs-keyword">if</span>(flutterAar)&#123;<br>	api com.lxs.flutter:flutter:<span class="hljs-number">0.0</span>.<span class="hljs-number">8</span><br>&#125;<span class="hljs-keyword">else</span>&#123;<br>	api <span class="hljs-keyword">project</span>(<span class="hljs-string">&#x27;:flutter&#x27;</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="小优化"><a href="#小优化" class="headerlink" title="小优化"></a>小优化</h2><p>现在每次执行脚本都是所有插件都一股脑打aar、版本升级、上传，这显得非常耗时又没有意义。其实并不是每次所有插件module都需要做这部分操作的，插件内容没有更新的情况下完全没必要。我们可以用一个文件记录plugin和它都应的版本，然后和.flutter-plugins中的作比较，更新了的做打aar、升级、上传操作，没有更新的保持原版本（或者各个插件单独上传maven，根据.flutter-plugins做版本收拢）。git依赖是这种判断方式的软肋，需要做更深一步的检查（可能可以通过文件的摘要信息来对比）。</p>
+<h2 id="更优的方案"><a href="#更优的方案" class="headerlink" title="更优的方案"></a>更优的方案</h2><p>github上有一种多module合并aar的方案 <a target="_blank" rel="noopener" href="https://github.com/adwiv/android-fat-aar">https://github.com/adwiv/android-fat-aar</a> ，其实也是蛮适合flutter module打产物的——将plugin module的aar和flutter module的aar合并，但是由于没有想好module内部的三方依赖怎么合并，所以没有实施。实际上fat-aar可以将三方依赖也打进整个aar中，可能会造成gradle依赖冲突默认解决方式失效（默认是使用高版本的依赖）。不知道是不是可以通过合并pom文件解决，能想到的就这些，希望可以给各位提供一些思路。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/flutter%E6%B7%B7%E5%90%88%E5%BC%80%E5%8F%91/">flutter混合开发</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E4%B8%80%E9%94%AE%E6%89%93aar/">一键打aar</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/07/07/interview/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">小菜鸟想去大厂的神秘宝典</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/07/07/c-so%E5%86%B2%E7%AA%81/">
+                        <span class="hidden-mobile">被React Native插件狂虐2天之后，写下c++_share.so冲突处理心路历程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+      typing(title)
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

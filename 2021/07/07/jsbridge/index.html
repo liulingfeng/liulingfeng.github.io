@@ -1,0 +1,614 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="客户端和h5通信采用哪种方式最合理，让我们一探jsbridge的底层原理">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+  <title>JsBridge源码详解 - 刘小帅的技术分享</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>刘小帅的博客</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/banner_7.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="JsBridge源码详解">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-07-07 17:42" pubdate>
+        2021年7月7日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.3k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      35
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">JsBridge源码详解</h1>
+            
+            <div class="markdown-body">
+              <h4>使用jsbridge的原因</h4>
+
+<p>原生webview h5调用native方法使用addJavaScriptInterface，然而4.2以下系统没有对注册java类的方法做限制，导致攻击者可以利用反射调用其他未注册的任何java类。出于安全性考虑使用jsbridge来处理h5和native的交互。</p>
+<h4>项目地址</h4>
+
+<p><a target="_blank" rel="noopener" href="https://github.com/lzyzsd/JsBridge">https://github.com/lzyzsd/JsBridge</a></p>
+<h4>使用方法/两端增加的额外代码比较少</h4>
+1.native注册方法供h5调用
+
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">webView.register<span class="hljs-constructor">Handler(<span class="hljs-string">&quot;submitFromWeb&quot;</span>)</span> &#123; data, <span class="hljs-keyword">function</span> -&gt;<br>           <span class="hljs-keyword">function</span>.on<span class="hljs-constructor">CallBack(<span class="hljs-string">&quot;submitFromWeb exe, response data 中文 from Java&quot;</span>)</span><br>       &#125;<br></code></pre></td></tr></table></figure>
+
+<p>2.native调用h5方法</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">webView.call<span class="hljs-constructor">Handler(<span class="hljs-string">&quot;functionInJs&quot;</span>, Gson()</span>.<span class="hljs-keyword">to</span><span class="hljs-constructor">Json(<span class="hljs-params">user</span>)</span>) &#123; data -&gt;<br>          <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Log</span>.</span></span>e(<span class="hljs-string">&quot;处理结果&quot;</span>, data)<br>      &#125;<br></code></pre></td></tr></table></figure>
+
+<p>3.h5注册方法供native调用</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">bridge.register<span class="hljs-constructor">Handler(<span class="hljs-string">&quot;functionInJs&quot;</span>, <span class="hljs-params">function</span> (<span class="hljs-params">data</span>, <span class="hljs-params">responseCallback</span>)</span> &#123;<br>            <span class="hljs-keyword">if</span> (responseCallback) &#123;<br>                <span class="hljs-keyword">let</span> responseData = <span class="hljs-string">&quot;Javascript Says Right back aka!&quot;</span>;<br>                response<span class="hljs-constructor">Callback(<span class="hljs-params">responseData</span>)</span>;<br>            &#125;<br>        &#125;)<br></code></pre></td></tr></table></figure>
+
+<p>4.h5调用native的方法</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-built_in">window</span>.WebViewJavascriptBridge.callHandler(<br>            <span class="hljs-string">&#x27;submitFromWeb&#x27;</span><br>            , &#123;<span class="hljs-string">&#x27;param&#x27;</span>: <span class="hljs-string">&#x27;中文测试&#x27;</span>&#125;<br>            , <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">responseData</span>) </span>&#123;<br>                <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">&quot;show&quot;</span>).innerHTML = <span class="hljs-string">&quot;send get responseData from java, data = &quot;</span> + responseData<br>            &#125;<br>        );<br></code></pre></td></tr></table></figure>
+
+<h4>源码解析</h4>
+
+<p>从上面的使用中可以看到window.WebViewJavascriptBridge和bridge对象，window中好像没有这些对象？WebViewJavascriptBridge从哪里来？</p>
+<p>答案在BridgeWebViewClient的onPageFinished中</p>
+<p>onPageFinished中有这么一段代码</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">BridgeUtil</span>.</span></span>web<span class="hljs-constructor">ViewLoadLocalJs(<span class="hljs-params">view</span>, BridgeWebView.<span class="hljs-params">toLoadJs</span>)</span>;<br></code></pre></td></tr></table></figure>
+<p>跟进BridgeUtil</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">public static void web<span class="hljs-constructor">ViewLoadLocalJs(WebView <span class="hljs-params">view</span>, String <span class="hljs-params">path</span>)</span>&#123;<br>       String jsContent = asset<span class="hljs-constructor">File2Str(<span class="hljs-params">view</span>.<span class="hljs-params">getContext</span>()</span>, path);<br>       view.load<span class="hljs-constructor">Url(<span class="hljs-string">&quot;javascript:&quot;</span> + <span class="hljs-params">jsContent</span>)</span>;<br>   &#125;<br></code></pre></td></tr></table></figure>
+
+<p>h5页面加载完成之后执行assets下面的WebViewJavascriptBridge.js，然后将WebViewJavascriptBridge.js里面的一系列方法加入到window中。我们可以看WebViewJavascriptBridge.js中的代码。</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs dts">window.WebViewJavascriptBridge = &#123;<br><span class="hljs-symbol">        init:</span> init,<br><span class="hljs-symbol">        send:</span> send,<br><span class="hljs-symbol">        registerHandler:</span> registerHandler,<br><span class="hljs-symbol">        callHandler:</span> callHandler,<br><span class="hljs-symbol">        _fetchQueue:</span> _fetchQueue,<br><span class="hljs-symbol">        _handleMessageFromNative:</span> _handleMessageFromNative<br>    &#125;;<br></code></pre></td></tr></table></figure>
+
+<p>这样WebViewJavascriptBridge对象就绑定到window中了。这是最重要的一步。接下来我们分两端来分析整个交互过程。</p>
+<h4>native注册方法供h5调用</h4>
+注册方法
+
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">webView.register<span class="hljs-constructor">Handler(<span class="hljs-string">&quot;submitFromWeb&quot;</span>)</span> &#123; data, <span class="hljs-keyword">function</span> -&gt;<br>            <span class="hljs-keyword">function</span>.on<span class="hljs-constructor">CallBack(<span class="hljs-string">&quot;submitFromWeb exe, response data 中文 from Java&quot;</span>)</span><br>        &#125;<br></code></pre></td></tr></table></figure>
+
+<p>跟进registerHandler函数</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, BridgeHandler&gt; messageHandlers = <span class="hljs-keyword">new</span> HashMap&lt;<span class="hljs-built_in">String</span>, BridgeHandler&gt;();<br><br><span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> <span class="hljs-function"><span class="hljs-title">registerHandler</span>(<span class="hljs-params"><span class="hljs-built_in">String</span> handlerName, BridgeHandler handler</span>)</span> &#123;<br>		<span class="hljs-keyword">if</span> (handler != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-comment">// 添加至 Map&lt;String, BridgeHandler&gt;</span><br>			messageHandlers.put(handlerName, handler);<br>		&#125;<br>	&#125;<br></code></pre></td></tr></table></figure>
+
+<p>将注册的方法添加到messageHandlers中，handlerName是方法的名字，BridgeHandler是个接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">BridgeHandler</span> </span>&#123;<br>	<span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">handler</span><span class="hljs-params">(String data, CallBackFunction function)</span></span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>用来回调h5传送的值和处理回传h5结果</p>
+<p>h5端调用刚注册的submitFromWeb方法。趁热！！！</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-built_in">window</span>.WebViewJavascriptBridge.callHandler(<br>                <span class="hljs-string">&#x27;submitFromWeb&#x27;</span><br>                , &#123;<span class="hljs-string">&#x27;param&#x27;</span>: <span class="hljs-string">&#x27;中文测试&#x27;</span>&#125;<br>                , <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">responseData</span>) </span>&#123;<br>                    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">&quot;show&quot;</span>).innerHTML = <span class="hljs-string">&quot;send get responseData from java, data = &quot;</span> + responseData<br>                &#125;<br>            );<br></code></pre></td></tr></table></figure>
+
+<p>跟进到WebViewJavascriptBridge.js中看callHandler</p>
+<figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs fortran"><span class="hljs-function"><span class="hljs-keyword">function</span></span> callHandler(handlerName, <span class="hljs-keyword">data</span>, responseCallback) &#123;<br>       _doSend(&#123;<br>           handlerName: handlerName,<br>           <span class="hljs-keyword">data</span>: <span class="hljs-keyword">data</span><br>       &#125;, responseCallback);<br>   &#125;<br></code></pre></td></tr></table></figure>
+
+<p>跟进_doSend</p>
+<figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs arcade"><span class="hljs-keyword">var</span> CUSTOM_PROTOCOL_SCHEME = <span class="hljs-string">&#x27;yy&#x27;</span>;<br><span class="hljs-keyword">var</span> QUEUE_HAS_MESSAGE = <span class="hljs-string">&#x27;__QUEUE_MESSAGE__/&#x27;</span>;<br><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_doSend</span>(<span class="hljs-params">message, responseCallback</span>) </span>&#123;<br>        <span class="hljs-keyword">if</span> (responseCallback) &#123;<br>            <span class="hljs-keyword">var</span> callbackId = <span class="hljs-string">&#x27;cb_&#x27;</span> + (uniqueId++) + <span class="hljs-string">&#x27;_&#x27;</span> + <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime();<br>            responseCallbacks[callbackId] = responseCallback;<br>            message.callbackId = callbackId;<br>        &#125;<br><br>        sendMessageQueue.push(message);<br>        messagingIframe.src = CUSTOM_PROTOCOL_SCHEME + <span class="hljs-string">&#x27;://&#x27;</span> + QUEUE_HAS_MESSAGE;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>分为有回调结果和没回调结果两种，有callback在message对象添加callbackId，然后将message对象添加到sendMessageQueue数组中，然后通过改变消息列表iframe的src触发shouldOverrideUrlLoading。消息列表iframe的创建代码也在WebViewJavascriptBridge.js中。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">function</span> <span class="hljs-constructor">_createQueueReadyIframe(<span class="hljs-params">doc</span>)</span> &#123;<br>        messagingIframe = doc.create<span class="hljs-constructor">Element(&#x27;<span class="hljs-params">iframe</span>&#x27;)</span>;<br>        messagingIframe.style.display = &#x27;none&#x27;;<br>        doc.documentElement.append<span class="hljs-constructor">Child(<span class="hljs-params">messagingIframe</span>)</span>;<br>    &#125;<br>    <br>var doc = document;<br><span class="hljs-constructor">_createQueueReadyIframe(<span class="hljs-params">doc</span>)</span>;<br></code></pre></td></tr></table></figure>
+
+<p>接下来就看BridgeWebViewClient中shouldOverrideUrlLoading回调处理了。</p>
+<figure class="highlight qml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs qml"><span class="hljs-built_in">String</span> YY_OVERRIDE_SCHEMA = <span class="hljs-string">&quot;yy://&quot;</span>;<br><span class="hljs-built_in">String</span> YY_RETURN_DATA = YY_OVERRIDE_SCHEMA + <span class="hljs-string">&quot;return/&quot;</span>;<br><br> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">url</span>.startsWith(BridgeUtil.YY_RETURN_DATA)) &#123; <span class="hljs-comment">// 如果是返回数据</span><br>                webView.handlerReturnData(<span class="hljs-built_in">url</span>);<br>                <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">url</span>.startsWith(BridgeUtil.YY_OVERRIDE_SCHEMA)) &#123; <br>                webView.flushMessageQueue();<br>                <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>            &#125;<br></code></pre></td></tr></table></figure>
+
+<p>第一个分支是处理返回数据，当前我们要看的是第二个分支，跟进flushMessageQueue代码。</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs typescript">重点关注<br><span class="hljs-built_in">String</span> JS_FETCH_QUEUE_FROM_JAVA = <span class="hljs-string">&quot;javascript:WebViewJavascriptBridge._fetchQueue();&quot;</span><br><br><span class="hljs-built_in">void</span> <span class="hljs-function"><span class="hljs-title">flushMessageQueue</span>(<span class="hljs-params"></span>)</span>&#123;<br> loadUrl(BridgeUtil.JS_FETCH_QUEUE_FROM_JAVA, <span class="hljs-keyword">new</span> <span class="hljs-function"><span class="hljs-title">CallBackFunction</span>(<span class="hljs-params"></span>)</span> &#123;<br>    <span class="hljs-comment">//具体数据处理</span><br>  &#125;<br>&#125;<br><br><span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> <span class="hljs-function"><span class="hljs-title">loadUrl</span>(<span class="hljs-params"><span class="hljs-built_in">String</span> jsUrl, CallBackFunction returnCallback</span>)</span> &#123;<br>	<span class="hljs-built_in">this</span>.loadUrl(jsUrl);<br>        <span class="hljs-comment">// 添加至 Map&lt;String, CallBackFunction&gt;</span><br>	responseCallbacks.put(BridgeUtil.parseFunctionName(jsUrl), returnCallback);<br>	&#125;<br></code></pre></td></tr></table></figure>
+
+<p>第一步调用请求数据的js方法，第二步把回调处理添加到responseCallbacks Map中。</p>
+<p>继续跟到WebViewJavascriptBridge.js中</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">var</span> CUSTOM_PROTOCOL_SCHEME = <span class="hljs-string">&#x27;yy&#x27;</span>;<br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_fetchQueue</span>(<span class="hljs-params"></span>) </span>&#123;<br>        <span class="hljs-keyword">var</span> messageQueueString = <span class="hljs-built_in">JSON</span>.stringify(sendMessageQueue);<br>        sendMessageQueue = [];<br>        <span class="hljs-keyword">if</span> (messageQueueString !== <span class="hljs-string">&#x27;[]&#x27;</span>) &#123;<br>            bizMessagingIframe.src = CUSTOM_PROTOCOL_SCHEME + <span class="hljs-string">&#x27;://return/_fetchQueue/&#x27;</span> + <span class="hljs-built_in">encodeURIComponent</span>(messageQueueString);<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>序列化消息队列，改变消息体的iframe的src将消息体回调到BridgeWebViewClient的shouldOverrideUrlLoading中，消息体添加在url中。消息体的iframe创建与消息列表的类似。</p>
+<p>继续跟到shouldOverrideUrlLoading中</p>
+<figure class="highlight qml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs qml"><span class="hljs-built_in">String</span> YY_OVERRIDE_SCHEMA = <span class="hljs-string">&quot;yy://&quot;</span>;<br><span class="hljs-built_in">String</span> YY_RETURN_DATA = YY_OVERRIDE_SCHEMA + <span class="hljs-string">&quot;return/&quot;</span>;<br><br> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">url</span>.startsWith(BridgeUtil.YY_RETURN_DATA)) &#123; <span class="hljs-comment">// 如果是返回数据</span><br>            webView.handlerReturnData(<span class="hljs-built_in">url</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">url</span>.startsWith(BridgeUtil.YY_OVERRIDE_SCHEMA)) &#123;<br>            webView.flushMessageQueue();<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        &#125;<br></code></pre></td></tr></table></figure>
+
+<p>调用了handlerReturnData方法</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">void handler<span class="hljs-constructor">ReturnData(String <span class="hljs-params">url</span>)</span> &#123;<br>		String functionName = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">BridgeUtil</span>.</span></span>get<span class="hljs-constructor">FunctionFromReturnUrl(<span class="hljs-params">url</span>)</span>;<br>		CallBackFunction f = responseCallbacks.get(functionName);<br>		String data = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">BridgeUtil</span>.</span></span>get<span class="hljs-constructor">DataFromReturnUrl(<span class="hljs-params">url</span>)</span>;<br>		<span class="hljs-keyword">if</span> (f != null) &#123;<br>			f.on<span class="hljs-constructor">CallBack(<span class="hljs-params">data</span>)</span>;<br>			responseCallbacks.remove(functionName);<br>			return;<br>		&#125;<br>	&#125;<br></code></pre></td></tr></table></figure>
+
+<p>从responseCallbacks中取出对应的回调处理数据，具体消息从url过滤中json对象解析得来。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">if</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>is<span class="hljs-constructor">Empty(<span class="hljs-params">callbackId</span>)</span>) &#123;<br>        <span class="hljs-comment">//需要告诉h5端执行结果</span><br>	responseFunction = <span class="hljs-keyword">new</span> <span class="hljs-constructor">CallBackFunction()</span> &#123;<br>		@Override<br>		public void on<span class="hljs-constructor">CallBack(String <span class="hljs-params">data</span>)</span> &#123;<br>		Message responseMsg = <span class="hljs-keyword">new</span> <span class="hljs-constructor">Message()</span>;<br>		responseMsg.set<span class="hljs-constructor">ResponseId(<span class="hljs-params">callbackId</span>)</span>;<br>		responseMsg.set<span class="hljs-constructor">ResponseData(<span class="hljs-params">data</span>)</span>;<br>		queue<span class="hljs-constructor">Message(<span class="hljs-params">responseMsg</span>)</span>;<br>		&#125;<br>	&#125;;<br>&#125;<span class="hljs-keyword">else</span>&#123;<br>    responseFunction = <span class="hljs-keyword">new</span> <span class="hljs-constructor">CallBackFunction()</span> &#123;<br>	@Override<br>	public void on<span class="hljs-constructor">CallBack(String <span class="hljs-params">data</span>)</span> &#123;<br>	<br>	 &#125;<br>  &#125;;<br>&#125;<br><br>BridgeHandler handler;<br>	<span class="hljs-keyword">if</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>is<span class="hljs-constructor">Empty(<span class="hljs-params">m</span>.<span class="hljs-params">getHandlerName</span>()</span>)) &#123;<br>	 handler = messageHandlers.get(m.get<span class="hljs-constructor">HandlerName()</span>);<br>	 &#125; <span class="hljs-keyword">else</span> &#123;<br>	  handler = defaultHandler;<br>	 &#125;<br>	 <span class="hljs-keyword">if</span> (handler != null)&#123;<br>	  handler.handler(m.get<span class="hljs-constructor">Data()</span>, responseFunction);<br>  &#125;<br></code></pre></td></tr></table></figure>
+
+<p>分为需要告诉h5执行结果和不需要两种，不需要告诉的什么都不做就不需要说了。需要告诉的设置message中的responseId和data，执行queueMessage。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">queueMessage</span>(<span class="hljs-params">Message m</span>)</span> &#123;<br>		<span class="hljs-keyword">if</span> (startupMessage != <span class="hljs-literal">null</span>) &#123;<br>			startupMessage.<span class="hljs-keyword">add</span>(m);<br>		&#125; <span class="hljs-keyword">else</span> &#123;<br>			dispatchMessage(m);<br>		&#125;<br>	&#125;<br></code></pre></td></tr></table></figure>
+
+<p>startupMessage在onPageFinished中会置为null，具体的作用后面会讲到。这边会执行dispatchMessage方法。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">String JS_HANDLE_MESSAGE_FROM_JAVA = <span class="hljs-string">&quot;javascript:WebViewJavascriptBridge._handleMessageFromNative(&#x27;%s&#x27;);&quot;</span>;<br>void dispatch<span class="hljs-constructor">Message(Message <span class="hljs-params">m</span>)</span> &#123;<br>        String messageJson = m.<span class="hljs-keyword">to</span><span class="hljs-constructor">Json()</span>;<br>        <span class="hljs-comment">//字符串转义特殊字符</span><br><br>        String javascriptCommand = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">String</span>.</span></span>format(BridgeUtil.JS_HANDLE_MESSAGE_FROM_JAVA, messageJson);<br>        <span class="hljs-comment">// 必须要找主线程才会将数据传递出去 --- 划重点</span><br>        <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Thread</span>.</span></span>current<span class="hljs-constructor">Thread()</span><span class="hljs-operator"> == </span><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Looper</span>.</span></span>get<span class="hljs-constructor">MainLooper()</span>.get<span class="hljs-constructor">Thread()</span>) &#123;<br>            this.load<span class="hljs-constructor">Url(<span class="hljs-params">javascriptCommand</span>)</span>;<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>又回到了WebViewJavascriptBridge.js的_handleMessageFromNative中，把结果塞回到html中。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">function</span> <span class="hljs-constructor">_handleMessageFromNative(<span class="hljs-params">messageJSON</span>)</span> &#123;<br>        <span class="hljs-keyword">if</span> (receiveMessageQueue) &#123;<br>            receiveMessageQueue.push(messageJSON);<br>        &#125;<br>        <span class="hljs-constructor">_dispatchMessageFromNative(<span class="hljs-params">messageJSON</span>)</span>;<br>    &#125;<br>    <br><span class="hljs-keyword">function</span> <span class="hljs-constructor">_dispatchMessageFromNative(<span class="hljs-params">messageJSON</span>)</span> &#123;<br>     set<span class="hljs-constructor">Timeout(<span class="hljs-params">function</span>()</span> &#123;<br>        var message = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">JSON</span>.</span></span>parse(messageJSON);<br>        var responseCallback;<br>        <span class="hljs-keyword">if</span> (message.responseId) &#123;<br>                responseCallback = responseCallbacks<span class="hljs-literal">[<span class="hljs-identifier">message</span>.<span class="hljs-identifier">responseId</span>]</span>;<br>                <span class="hljs-keyword">if</span> (!responseCallback) &#123;<br>                    return;<br>                &#125;<br>                response<span class="hljs-constructor">Callback(<span class="hljs-params">message</span>.<span class="hljs-params">responseData</span>)</span>;<br>                delete responseCallbacks<span class="hljs-literal">[<span class="hljs-identifier">message</span>.<span class="hljs-identifier">responseId</span>]</span>;<br>            &#125; <br>     &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>为了看得更清楚我画了一张图</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/10/18/16ddd795b9368bb7?w=1027&h=1298&f=png&s=62853" srcset="/img/loading.gif" lazyload></p>
+<h4>h5注册方法供native调用</h4>
+
+<p>因为h5页面加载完成的时候WebViewJavascriptBridge对象还没有添加到window中，所以无法调用WebViewJavascriptBridge.registerHandler方法。这里有一个巧妙的做法。看下面的代码。</p>
+<p>WebViewJavascriptBridge.js中创建了一个叫WebViewJavascriptBridgeReady自定义事件，加载到的时候立马执行。</p>
+<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs xquery">var<span class="hljs-built_in"> doc</span> =<span class="hljs-built_in"> document</span>;<br>var readyEvent =<span class="hljs-built_in"> doc</span>.createEvent(<span class="hljs-string">&#x27;Events&#x27;</span>);<br>readyEvent.initEvent(<span class="hljs-string">&#x27;WebViewJavascriptBridgeReady&#x27;</span>);<span class="hljs-built_in"></span><br><span class="hljs-built_in">doc</span>.dispatchEvent(readyEvent);<br></code></pre></td></tr></table></figure>
+
+<p>html页面中添加了WebViewJavascriptBridgeReady事件的监听</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">connectWebViewJavascriptBridge</span>(<span class="hljs-params">callback</span>) </span>&#123;<br>            <span class="hljs-keyword">if</span> (<span class="hljs-built_in">window</span>.WebViewJavascriptBridge) &#123;<br>                callback(WebViewJavascriptBridge)<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-built_in">document</span>.addEventListener(<br>                    <span class="hljs-string">&#x27;WebViewJavascriptBridgeReady&#x27;</span><br>                    , <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>&#123;<br>                        callback(WebViewJavascriptBridge)<br>                    &#125;,<br>                    <span class="hljs-literal">false</span><br>                );<br>            &#125;<br>        &#125;<br><br>connectWebViewJavascriptBridge(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">bridge</span>) </span>&#123;<br>    bridge.registerHandler(<span class="hljs-string">&quot;functionInJs&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data, responseCallback</span>) </span>&#123;<br>            <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">&quot;show&quot;</span>).innerHTML = (<span class="hljs-string">&quot;data from Java: = &quot;</span> + data);<br>            <span class="hljs-keyword">if</span> (responseCallback) &#123;<br>                <span class="hljs-keyword">var</span> responseData = <span class="hljs-string">&quot;Javascript Says Right back aka!&quot;</span>;<br>                responseCallback(responseData);<br>                &#125;<br>            &#125;);<br>&#125;)<br></code></pre></td></tr></table></figure>
+
+<p>也就是说增加了一个钩子，WebViewJavascriptBridge.js执行完成就能通知到html，随后就可以注册事件了，这边注册了一个叫functionInJs的事件。</p>
+<p>native调用该方法</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">webView.call<span class="hljs-constructor">Handler(<span class="hljs-string">&quot;functionInJs&quot;</span>, Gson()</span>.<span class="hljs-keyword">to</span><span class="hljs-constructor">Json(<span class="hljs-params">user</span>)</span>) &#123; data -&gt;<br>           <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Log</span>.</span></span>e(<span class="hljs-string">&quot;处理结果&quot;</span>, data)<br>   &#125;<br></code></pre></td></tr></table></figure>
+
+<p>跟进BridgeWebview的callHandler方法</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">public void call<span class="hljs-constructor">Handler(String <span class="hljs-params">handlerName</span>, String <span class="hljs-params">data</span>, CallBackFunction <span class="hljs-params">callBack</span>)</span> &#123;<br>        <span class="hljs-keyword">do</span><span class="hljs-constructor">Send(<span class="hljs-params">handlerName</span>, <span class="hljs-params">data</span>, <span class="hljs-params">callBack</span>)</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>跟进doSend</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">private</span> void <span class="hljs-keyword">do</span><span class="hljs-constructor">Send(String <span class="hljs-params">handlerName</span>, String <span class="hljs-params">data</span>, CallBackFunction <span class="hljs-params">responseCallback</span>)</span> &#123;<br>	Message m = <span class="hljs-keyword">new</span> <span class="hljs-constructor">Message()</span>;<br>	<span class="hljs-keyword">if</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>is<span class="hljs-constructor">Empty(<span class="hljs-params">data</span>)</span>) &#123;<br>		m.set<span class="hljs-constructor">Data(<span class="hljs-params">data</span>)</span>;<br>	&#125;<br>	<span class="hljs-keyword">if</span> (responseCallback != null) &#123;<br>		String callbackStr = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">String</span>.</span></span>format(BridgeUtil.CALLBACK_ID_FORMAT, ++uniqueId + (BridgeUtil.UNDERLINE_STR + <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">SystemClock</span>.</span></span>current<span class="hljs-constructor">ThreadTimeMillis()</span>));<br>		responseCallbacks.put(callbackStr, responseCallback);<br>		m.set<span class="hljs-constructor">CallbackId(<span class="hljs-params">callbackStr</span>)</span>;<br>	&#125;<br>		<span class="hljs-keyword">if</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>is<span class="hljs-constructor">Empty(<span class="hljs-params">handlerName</span>)</span>) &#123;<br>		  m.set<span class="hljs-constructor">HandlerName(<span class="hljs-params">handlerName</span>)</span>;<br>		&#125;<br>		queue<span class="hljs-constructor">Message(<span class="hljs-params">m</span>)</span>;<br>	&#125;<br></code></pre></td></tr></table></figure>
+
+<p>组装Message，有responseCallback把responseCallback添加到responseCallbacks</p>
+<p>跟进queueMessage</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">queueMessage</span>(<span class="hljs-params">Message m</span>)</span> &#123;<br>	<span class="hljs-keyword">if</span> (startupMessage != <span class="hljs-literal">null</span>) &#123;<br>	   startupMessage.<span class="hljs-keyword">add</span>(m);<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>	   dispatchMessage(m);<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这边又看到了startupMessage，startupMessage就是在这里用的。这边startupMessage不为null，把消息添加到了startupMessage中。执行是在onPageFinished中。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">if</span> (webView.get<span class="hljs-constructor">StartupMessage()</span> != null) &#123;<br>            <span class="hljs-keyword">for</span> (Message m : webView.get<span class="hljs-constructor">StartupMessage()</span>) &#123;<br>                webView.dispatch<span class="hljs-constructor">Message(<span class="hljs-params">m</span>)</span>;<br>            &#125;<br>            webView.set<span class="hljs-constructor">StartupMessage(<span class="hljs-params">null</span>)</span>;<br>        &#125;<br></code></pre></td></tr></table></figure>
+
+<p>走到了dispatchMessage</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">String JS_HANDLE_MESSAGE_FROM_JAVA = <span class="hljs-string">&quot;javascript:WebViewJavascriptBridge._handleMessageFromNative(&#x27;%s&#x27;);&quot;</span>;<br>void dispatch<span class="hljs-constructor">Message(Message <span class="hljs-params">m</span>)</span> &#123;<br>        String messageJson = m.<span class="hljs-keyword">to</span><span class="hljs-constructor">Json()</span>;<br>        <span class="hljs-comment">//字符串转义特殊字符</span><br><br>        String javascriptCommand = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">String</span>.</span></span>format(BridgeUtil.JS_HANDLE_MESSAGE_FROM_JAVA, messageJson);<br>        <span class="hljs-comment">// 必须要找主线程才会将数据传递出去 --- 划重点</span><br>        <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Thread</span>.</span></span>current<span class="hljs-constructor">Thread()</span><span class="hljs-operator"> == </span><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Looper</span>.</span></span>get<span class="hljs-constructor">MainLooper()</span>.get<span class="hljs-constructor">Thread()</span>) &#123;<br>            this.load<span class="hljs-constructor">Url(<span class="hljs-params">javascriptCommand</span>)</span>;<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>跟进WebViewJavascriptBridge.js的_handleMessageFromNative</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">function</span> <span class="hljs-constructor">_handleMessageFromNative(<span class="hljs-params">messageJSON</span>)</span> &#123;<br>        <span class="hljs-keyword">if</span> (receiveMessageQueue) &#123;<br>            receiveMessageQueue.push(messageJSON);<br>        &#125;<br>        <span class="hljs-constructor">_dispatchMessageFromNative(<span class="hljs-params">messageJSON</span>)</span>;<br>       <br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>走到_dispatchMessageFromNative</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_dispatchMessageFromNative</span>(<span class="hljs-params">messageJSON</span>) </span>&#123;<br>     <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>&#123;<br>       <span class="hljs-keyword">var</span> message = <span class="hljs-built_in">JSON</span>.parse(messageJSON);<br>       <span class="hljs-keyword">if</span> (message.callbackId) &#123;<br>            <span class="hljs-keyword">var</span> callbackResponseId = message.callbackId;<br>            responseCallback = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">responseData</span>) </span>&#123;<br>                 _doSend(&#123;<br>                    <span class="hljs-attr">responseId</span>: callbackResponseId,<br>                    <span class="hljs-attr">responseData</span>: responseData<br>                &#125;);<br>                &#125;;<br>            &#125;<br>          <span class="hljs-keyword">var</span> handler = WebViewJavascriptBridge._messageHandler;<br>                <span class="hljs-keyword">if</span> (message.handlerName) &#123;<br>                    handler = messageHandlers[message.handlerName];<br>                &#125;<br>           <span class="hljs-keyword">try</span> &#123;<br>                handler(message.data, responseCallback);<br>                &#125; <span class="hljs-keyword">catch</span> (exception) &#123;<br>                    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-built_in">console</span> != <span class="hljs-string">&#x27;undefined&#x27;</span>) &#123;<br>                        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&quot;WebViewJavascriptBridge: WARNING: javascript handler threw.&quot;</span>, message, exception);<br>                &#125;<br>            &#125;<br>     &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>有回调的情况组装responseCallback，从messageHandlers找到对应的handler处理数据。回调数据在_doSend中发送</p>
+<figure class="highlight arcade"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs arcade"><span class="hljs-keyword">var</span> CUSTOM_PROTOCOL_SCHEME = <span class="hljs-string">&#x27;yy&#x27;</span>;<br>    <span class="hljs-keyword">var</span> QUEUE_HAS_MESSAGE = <span class="hljs-string">&#x27;__QUEUE_MESSAGE__/&#x27;</span>;<br>    <br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_doSend</span>(<span class="hljs-params">message, responseCallback</span>) </span>&#123;<br>        <span class="hljs-keyword">if</span> (responseCallback) &#123;<br>            <span class="hljs-keyword">var</span> callbackId = <span class="hljs-string">&#x27;cb_&#x27;</span> + (uniqueId++) + <span class="hljs-string">&#x27;_&#x27;</span> + <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime();<br>            responseCallbacks[callbackId] = responseCallback;<br>            message.callbackId = callbackId;<br>        &#125;<br><br>        sendMessageQueue.push(message);<br>        messagingIframe.src = CUSTOM_PROTOCOL_SCHEME + <span class="hljs-string">&#x27;://&#x27;</span> + QUEUE_HAS_MESSAGE;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>改变消息体iframe的src，将回调数据返回到shouldOverrideUrlLoading中</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">void handler<span class="hljs-constructor">ReturnData(String <span class="hljs-params">url</span>)</span> &#123;<br>	String functionName = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">BridgeUtil</span>.</span></span>get<span class="hljs-constructor">FunctionFromReturnUrl(<span class="hljs-params">url</span>)</span>;<br>	CallBackFunction f = responseCallbacks.get(functionName);<br>	String data = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">BridgeUtil</span>.</span></span>get<span class="hljs-constructor">DataFromReturnUrl(<span class="hljs-params">url</span>)</span>;<br>	<span class="hljs-keyword">if</span> (f != null) &#123;<br>	   f.on<span class="hljs-constructor">CallBack(<span class="hljs-params">data</span>)</span>;<br>	   responseCallbacks.remove(functionName);<br>	   return;<br>	  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>从responseCallbacks拿到对应的CallBackFunction回调数据，至此回调结果页拿到了。</p>
+<p><img src="https://user-gold-cdn.xitu.io/2019/10/18/16dddc0b210d3afe?w=1010&h=1533&f=png&s=75215" srcset="/img/loading.gif" lazyload></p>
+<h4>其他</h4>
+
+<p>1.添加默认处理</br></p>
+<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs actionscript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">init</span><span class="hljs-params">(messageHandler)</span> </span>&#123;<br>       WebViewJavascriptBridge._messageHandler = messageHandler;<br>   &#125;<br>   <br>    bridge.init(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(message, responseCallback)</span> </span>&#123;<br>               <span class="hljs-keyword">var</span> data = &#123;<br>                   <span class="hljs-string">&#x27;Javascript Responds&#x27;</span>: <span class="hljs-string">&#x27;测试中文!&#x27;</span><br>               &#125;;<br><br>               <span class="hljs-keyword">if</span> (responseCallback) &#123;<br>                   responseCallback(data);<br>               &#125;<br>       &#125;);<br></code></pre></td></tr></table></figure>
+<p>2._dispatchMessageFromNative为什么要异步执行</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">为了两条数据消息不重叠，导致消息丢失。<br></code></pre></td></tr></table></figure>
+
+
+<h4>总结</h4>
+h5发送数据给native通过改变iframe的src回调到shouldOverrideUrlLoading</br>
+native发送消息给h5通过loadurl
+
+
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/jsbridge/">jsbridge</a>
+                    
+                      <a class="hover-with-bg" href="/tags/webview/">webview</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E6%BA%90%E7%A0%81/">源码</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/07/07/mavenCentral/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">手把手教你发布Android库到MavenCentral</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/07/07/arouter/">
+                        <span class="hidden-mobile">ARouter路由跳转到底是怎么实现的？</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+      typing(title)
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

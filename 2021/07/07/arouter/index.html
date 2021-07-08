@@ -1,0 +1,656 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="相信绝大多数公司的项目都做了组件化。为了解耦，组件化势必要解决组件间的通信。其中阿里巴巴开源的Arouter很好的解决了组件间的通信，一直受到开发者的青睐">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+  <title>ARouter路由跳转到底是怎么实现的？ - 刘小帅的技术分享</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>刘小帅的博客</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/banner_6.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="ARouter路由跳转到底是怎么实现的？">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-07-07 17:36" pubdate>
+        2021年7月7日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      4.7k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      72
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">ARouter路由跳转到底是怎么实现的？</h1>
+            
+            <div class="markdown-body">
+              <h4>前言</h4>
+
+<p>相信绝大多数公司的项目都做了组件化。为了解耦，组件化势必要解决<strong>组件间的通信</strong>。其中阿里巴巴开源的Arouter很好的解决了组件间的通信，一直受到开发者的青睐。今天，我们来一步步揭开它的神秘面纱。</p>
+<h4>首先下载源代码，项目地址：<br></h4>
+
+<p><a target="_blank" rel="noopener" href="https://github.com/alibaba/ARouter">https://github.com/alibaba/ARouter</a></p>
+<h4>来讲一下项目结构：</h4>
+
+<p><img src="https://user-gold-cdn.xitu.io/2019/11/12/16e5e8e3486c4a3f?w=462&h=474&f=png&s=53929" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li>app:项目主工程，演示代码</li>
+<li>module-java：java演示代码</li>
+<li>module-kotlin：kotlin演示代码</li>
+<li>arouter-annotation：所有注解以及注解涉及到的类</li>
+<li>arouter-compiler：注解处理器，APT</li>
+<li>arouter-gradle-plugin：路由表自动注册插件</li>
+<li>arouter-idea-plugin：路由导航插件，搜索ARouter Helper插件安装即可</li>
+<li>arouter-api：所有的api，关键代码基本上在这边</li>
+</ul>
+<h4>第一步就是要生成注解类</h4>
+@Route @Autowired Interceptor Provider都会生成如下面所示的对应注解类，java生成的注解类的位置在build-generated-sourse-apt中，kotlin生成的注解类的位置在build-generated-sourse-kapt
+
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">public <span class="hljs-keyword">class</span> ARouter?Group?app implements IRouteGroup &#123;<br>  @Override<br>  public void load<span class="hljs-constructor">Into(Map&lt;String, RouteMeta&gt; <span class="hljs-params">atlas</span>)</span> &#123;<br>    atlas.put(<span class="hljs-string">&quot;/app/degrade1&quot;</span>, <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">RouteMeta</span>.</span></span>build(RouteType.PROVIDER, <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">DegradeServiceImpl</span>.</span></span><span class="hljs-keyword">class</span>, <span class="hljs-string">&quot;/app/degrade1&quot;</span>, <span class="hljs-string">&quot;app&quot;</span>, null, -<span class="hljs-number">1</span>, -<span class="hljs-number">2147483648</span>));<br>    atlas.put(<span class="hljs-string">&quot;/app/main&quot;</span>, <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">RouteMeta</span>.</span></span>build(RouteType.ACTIVITY, <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">MainActivity</span>.</span></span><span class="hljs-keyword">class</span>, <span class="hljs-string">&quot;/app/main&quot;</span>, <span class="hljs-string">&quot;app&quot;</span>, null, -<span class="hljs-number">1</span>, -<span class="hljs-number">2147483648</span>));<br>    atlas.put(<span class="hljs-string">&quot;/app/path&quot;</span>, <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">RouteMeta</span>.</span></span>build(RouteType.PROVIDER, <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">PathReplaceServiceImpl</span>.</span></span><span class="hljs-keyword">class</span>, <span class="hljs-string">&quot;/app/path&quot;</span>, <span class="hljs-string">&quot;app&quot;</span>, null, -<span class="hljs-number">1</span>, -<span class="hljs-number">2147483648</span>));<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>这里需要重点关注一下RouteMeta这个类，这个类存储了目标对象的所有信息。包括路由类型、目标对象类、path、group、参数、优先级、额外参数。<br></p>
+<p>涉及到的知识点:</p>
+<ul>
+<li>1.注解，注解生成器apt</li>
+<li>2.javapoet</li>
+<li>3.auto-service</li>
+</ul>
+<p>这里是我写的一个AptDemo，仅供参考：<br></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/liulingfeng/APT">https://github.com/liulingfeng/APT</a></p>
+<p>关于AbstractProcessor的<strong>process多次执行</strong>可以通过下面方法处理</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-meta">@Override</span><br>   <span class="hljs-keyword">public</span> <span class="hljs-built_in">boolean</span> <span class="hljs-function"><span class="hljs-title">process</span>(<span class="hljs-params"><span class="hljs-built_in">Set</span>&lt;? <span class="hljs-keyword">extends</span> TypeElement&gt; annotations, RoundEnvironment roundEnvironment</span>)</span> &#123;<br>       <span class="hljs-keyword">if</span> (annotations != <span class="hljs-literal">null</span> &amp;&amp; annotations.size() &gt; <span class="hljs-number">0</span>) &#123;<br>          <br>       &#125;<br>   &#125;<br><br></code></pre></td></tr></table></figure>
+
+<h4>下面正式讲解api</h4>
+先整体感受一下整个流程<br>
+
+<p><img src="https://user-gold-cdn.xitu.io/2019/11/20/16e88ab7c09ec391?w=1088&h=1287&f=png&s=117461" srcset="/img/loading.gif" lazyload><br>根据官方说明，首先在Application中调用如下api</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">if</span>(BuildConfig.DEBUG)&#123;<br>           <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span><span class="hljs-keyword">open</span><span class="hljs-constructor">Log()</span>;<span class="hljs-comment">//打开日志</span><br>           <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span><span class="hljs-keyword">open</span><span class="hljs-constructor">Debug()</span>;<span class="hljs-comment">//打开路由调试</span><br>       &#125;<br><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span>init(this);<br></code></pre></td></tr></table></figure>
+
+<p>进入Arouter.init(this)</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">public static void init(Application application) &#123;<br>        <span class="hljs-keyword">if</span> (!hasInit) &#123;<br>            logger = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">_ARouter</span>.</span></span>logger;<br>            hasInit = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">_ARouter</span>.</span></span>init(application);<br><br>            <span class="hljs-keyword">if</span> (hasInit) &#123;<br>                <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">_ARouter</span>.</span></span>after<span class="hljs-constructor">Init()</span>;<br>            &#125;<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>hasInit保证只初始化一次，内部调用了_ARouter.init(application)，Arouter是门面， _Arouter是具体实现，典型的门面模式。初始化之后调用 _ARouter.afterInit初始化拦截器（这个后面细讲）。继续跟进 _ARouter.init</p>
+<figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs aspectj"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">synchronized</span> <span class="hljs-function"><span class="hljs-keyword">boolean</span> <span class="hljs-title">init</span><span class="hljs-params">(Application application)</span> </span>&#123;<br>        mContext = application;<br>        LogisticsCenter.init(mContext, executor);<br>        logger.info(Consts.TAG, <span class="hljs-string">&quot;ARouter init success!&quot;</span>);<br>        hasInit = <span class="hljs-keyword">true</span>;<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">true</span>;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>一眼就看到关键代码在LogisticsCenter.init中，executor是一个自定义的线程池(实现了一种抛出错误的方式)。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">public synchronized static void init(Context context, ThreadPoolExecutor tpe) throws HandlerException &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-keyword">if</span> (registerByPlugin) &#123;<br>                logger.info(TAG, <span class="hljs-string">&quot;Load router map by arouter-auto-register plugin.&quot;</span>);<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                Set&lt;String&gt; routerMap;<br>                <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span>debuggable<span class="hljs-literal">()</span><span class="hljs-operator"> || </span><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">PackageUtils</span>.</span></span>is<span class="hljs-constructor">NewVersion(<span class="hljs-params">context</span>)</span>) &#123;<br>                    routerMap = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ClassUtils</span>.</span></span>get<span class="hljs-constructor">FileNameByPackageName(<span class="hljs-params">mContext</span>, ROUTE_ROOT_PAKCAGE)</span>;<br>                    <span class="hljs-keyword">if</span> (!routerMap.is<span class="hljs-constructor">Empty()</span>) &#123;<br>                        context.get<span class="hljs-constructor">SharedPreferences(AROUTER_SP_CACHE_KEY, Context.MODE_PRIVATE)</span>.edit<span class="hljs-literal">()</span>.put<span class="hljs-constructor">StringSet(AROUTER_SP_KEY_MAP, <span class="hljs-params">routerMap</span>)</span>.apply<span class="hljs-literal">()</span>;<br>                    &#125;<br><br>                    <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">PackageUtils</span>.</span></span>update<span class="hljs-constructor">Version(<span class="hljs-params">context</span>)</span>;<br>                &#125; <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-keyword">for</span> (String className : routerMap) &#123;<br>                    <span class="hljs-keyword">if</span> (className.starts<span class="hljs-constructor">With(ROUTE_ROOT_PAKCAGE + DOT + SDK_NAME + SEPARATOR + SUFFIX_ROOT)</span>) &#123;<br>                        ((IRouteRoot) (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Class</span>.</span></span><span class="hljs-keyword">for</span><span class="hljs-constructor">Name(<span class="hljs-params">className</span>)</span>.get<span class="hljs-constructor">Constructor()</span>.<span class="hljs-keyword">new</span><span class="hljs-constructor">Instance()</span>)).load<span class="hljs-constructor">Into(Warehouse.<span class="hljs-params">groupsIndex</span>)</span>;<br>                    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (className.starts<span class="hljs-constructor">With(ROUTE_ROOT_PAKCAGE + DOT + SDK_NAME + SEPARATOR + SUFFIX_INTERCEPTORS)</span>) &#123;<br>                        ((IInterceptorGroup) (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Class</span>.</span></span><span class="hljs-keyword">for</span><span class="hljs-constructor">Name(<span class="hljs-params">className</span>)</span>.get<span class="hljs-constructor">Constructor()</span>.<span class="hljs-keyword">new</span><span class="hljs-constructor">Instance()</span>)).load<span class="hljs-constructor">Into(Warehouse.<span class="hljs-params">interceptorsIndex</span>)</span>;<br>                    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (className.starts<span class="hljs-constructor">With(ROUTE_ROOT_PAKCAGE + DOT + SDK_NAME + SEPARATOR + SUFFIX_PROVIDERS)</span>) &#123;<br>                        ((IProviderGroup) (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Class</span>.</span></span><span class="hljs-keyword">for</span><span class="hljs-constructor">Name(<span class="hljs-params">className</span>)</span>.get<span class="hljs-constructor">Constructor()</span>.<span class="hljs-keyword">new</span><span class="hljs-constructor">Instance()</span>)).load<span class="hljs-constructor">Into(Warehouse.<span class="hljs-params">providersIndex</span>)</span>;<br>                    &#125;<br>                &#125;<br>            &#125;<br>        &#125; catch (Exception e) &#123;<br>            throw <span class="hljs-keyword">new</span> <span class="hljs-constructor">HandlerException(TAG + <span class="hljs-string">&quot;ARouter init logistics center exception! [&quot;</span> + <span class="hljs-params">e</span>.<span class="hljs-params">getMessage</span>()</span> + <span class="hljs-string">&quot;]&quot;</span>);<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>代码比较长，我把它分解一下</p>
+<ul>
+<li>1.判断是不是用插件自动注册路由表，插件注册的方式另说</li>
+<li>2.从dex中加载指定路径（com.alibaba.android.arouter.routes）下的所有类的名字，其实就是注解生成类，然后根据版本号升级版本。非debuggable环境下从SharedPreferences缓存中读取（做的一个优化点）</li>
+<li>3.反射调用loadInto把Group、Interceptor、Provider的映射关系添加到集合中</li>
+</ul>
+<p>看一下各种类型的注解生成类<br><br>Root(这里做了优化先<strong>加载各个group</strong>，用到的时候再加载各个group下的路由)</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ARouter</span>?<span class="hljs-title">Root</span>?<span class="hljs-title">app</span> <span class="hljs-title">implements</span> <span class="hljs-title">IRouteRoot</span> </span>&#123;<br>  <span class="hljs-meta">@Override</span><br>  <span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> <span class="hljs-function"><span class="hljs-title">loadInto</span>(<span class="hljs-params"><span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, Class&lt;? <span class="hljs-keyword">extends</span> IRouteGroup&gt;&gt; routes</span>)</span> &#123;<br>    routes.put(<span class="hljs-string">&quot;app&quot;</span>, ARouter?Group?app.class);<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>Interceptor</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-symbol">ARouter</span>?<span class="hljs-symbol">Interceptors</span>?<span class="hljs-symbol">app</span> <span class="hljs-symbol">implements</span> <span class="hljs-symbol">IInterceptorGroup</span> &#123;<br>  @Override<br>  <span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> loadInto(Map&lt;Integer, Class&lt;? extends IInterceptor&gt;&gt; <span class="hljs-built_in">int</span>erceptors) &#123;<br>    <span class="hljs-built_in">int</span>erceptors.put(<span class="hljs-number">9</span>, TestInterceptor2.class);<br>    <span class="hljs-built_in">int</span>erceptors.put(<span class="hljs-number">10</span>, TestInterceptor.class);<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>Provider</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ARouter</span>?<span class="hljs-title">Providers</span>?<span class="hljs-title">app</span> <span class="hljs-title">implements</span> <span class="hljs-title">IProviderGroup</span> </span>&#123;<br>  <span class="hljs-meta">@Override</span><br>  <span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> <span class="hljs-function"><span class="hljs-title">loadInto</span>(<span class="hljs-params"><span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, RouteMeta&gt; providers</span>)</span> &#123;<br>    providers.put(<span class="hljs-string">&quot;com.xls.HelloService&quot;</span>, RouteMeta.build(RouteType.PROVIDER, HelloServiceImpl.class, <span class="hljs-string">&quot;/yourservicegroupname/hello&quot;</span>, <span class="hljs-string">&quot;yourservicegroupname&quot;</span>, <span class="hljs-literal">null</span>, -<span class="hljs-number">1</span>, -<span class="hljs-number">2147483648</span>));<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>init工作总结及知识点</p>
+<ul>
+<li>1.把Group、Interceptor、Provider注解类的映射添加到Warehouse.groupsIndex、Warehouse.interceptorsIndex、Warehouse.providersIndex集合中</li>
+<li>2.实例化所有的Interceptor添加到Warehouse.interceptors中</li>
+<li>3.dex分析-多dex怎么查找-热修复的根本原理是什么</li>
+<li>4.线程池-线程池各个参数-线程池抛出错误的方法-如何保证线程池线程名字唯一性-原子类</li>
+</ul>
+<h4>顺便补充一下插件自动注册路由表</h4>
+首先目光移到PluginLaunch，这是自定义插件的入口。
+
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs gradle"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> PluginLaunch <span class="hljs-keyword">implements</span> Plugin&lt;<span class="hljs-keyword">Project</span>&gt; &#123;<br>    @Override<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> apply(<span class="hljs-keyword">Project</span> <span class="hljs-keyword">project</span>) &#123;<br>            <span class="hljs-keyword">def</span> android = <span class="hljs-keyword">project</span>.extensions.getByType(AppExtension)<br>            <span class="hljs-keyword">def</span> transformImpl = <span class="hljs-keyword">new</span> RegisterTransform(<span class="hljs-keyword">project</span>)<br><br>            ArrayList&lt;ScanSetting&gt; list = <span class="hljs-keyword">new</span> ArrayList&lt;&gt;(<span class="hljs-number">3</span>)<br>            list.add(<span class="hljs-keyword">new</span> ScanSetting(<span class="hljs-string">&#x27;IRouteRoot&#x27;</span>))<br>            list.add(<span class="hljs-keyword">new</span> ScanSetting(<span class="hljs-string">&#x27;IInterceptorGroup&#x27;</span>))<br>            list.add(<span class="hljs-keyword">new</span> ScanSetting(<span class="hljs-string">&#x27;IProviderGroup&#x27;</span>))<br>            RegisterTransform.registerList = list<br>            android.registerTransform(transformImpl)<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>这里完成了自定义Transform的注册以及添加需要过滤的接口到ScanSetting，最主要的代码自然是在RegisterTransform中。直奔RegisterTransform的transform方法，首先遍历jar。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">inputs.each &#123; TransformInput input -&gt;<br>        input.jarInputs.each &#123;<br>                <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ScanUtil</span>.</span></span>should<span class="hljs-constructor">ProcessPreDexJar(<span class="hljs-params">src</span>.<span class="hljs-params">absolutePath</span>)</span>) &#123;<br>                    <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ScanUtil</span>.</span></span>scan<span class="hljs-constructor">Jar(<span class="hljs-params">src</span>, <span class="hljs-params">dest</span>)</span><br>                &#125;<br>                <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">FileUtils</span>.</span></span>copy<span class="hljs-constructor">File(<span class="hljs-params">src</span>, <span class="hljs-params">dest</span>)</span><br>            &#125;<br><br></code></pre></td></tr></table></figure>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">static void scan<span class="hljs-constructor">Jar(File <span class="hljs-params">jarFile</span>, File <span class="hljs-params">destFile</span>)</span> &#123;<br>        <span class="hljs-keyword">if</span> (jarFile) &#123;<br>            def file = <span class="hljs-keyword">new</span> <span class="hljs-constructor">JarFile(<span class="hljs-params">jarFile</span>)</span><br>            Enumeration enumeration = file.entries<span class="hljs-literal">()</span><br>            <span class="hljs-keyword">while</span> (enumeration.has<span class="hljs-constructor">MoreElements()</span>) &#123;<br>                JarEntry jarEntry = (JarEntry) enumeration.next<span class="hljs-constructor">Element()</span><br>                String entryName = jarEntry.get<span class="hljs-constructor">Name()</span><br>                <span class="hljs-keyword">if</span> (entryName.starts<span class="hljs-constructor">With(<span class="hljs-string">&quot;com/alibaba/android/arouter/routes/&quot;</span>)</span>) &#123;<br>                    InputStream inputStream = file.get<span class="hljs-constructor">InputStream(<span class="hljs-params">jarEntry</span>)</span><br>                    scan<span class="hljs-constructor">Class(<span class="hljs-params">inputStream</span>)</span><br>                    inputStream.close<span class="hljs-literal">()</span><br>                &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-string">&quot;com/alibaba/android/arouter/core/LogisticsCenter.class&quot;</span><span class="hljs-operator"> == </span>entryName) &#123;<br>                    <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">RegisterTransform</span>.</span></span>fileContainsInitClass = destFile<br>                &#125;<br>            &#125;<br>            file.close<span class="hljs-literal">()</span><br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>做到两步工作:1.把com/alibaba/android/arouter/routes包名下的交给scanClass处理（这个稍后会分析到） 2.找到LogisticsCenter.class类，对于这个类想必很熟悉吧。</p>
+<p>接下来遍历directory</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">input.directoryInputs.each &#123; DirectoryInput directoryInput -&gt;<br>               directoryInput.file.eachFileRecurse &#123; File file -&gt;<br>                   <span class="hljs-keyword">if</span>(file.is<span class="hljs-constructor">File()</span><span class="hljs-operator"> &amp;&amp; </span><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ScanUtil</span>.</span></span>should<span class="hljs-constructor">ProcessClass(<span class="hljs-params">path</span>)</span>)&#123;<br>                       <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ScanUtil</span>.</span></span>scan<span class="hljs-constructor">Class(<span class="hljs-params">file</span>)</span><br>                   &#125;<br>               &#125;<br>           &#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">static void scan<span class="hljs-constructor">Class(InputStream <span class="hljs-params">inputStream</span>)</span> &#123;<br>        ClassReader cr = <span class="hljs-keyword">new</span> <span class="hljs-constructor">ClassReader(<span class="hljs-params">inputStream</span>)</span><br>        ClassWriter cw = <span class="hljs-keyword">new</span> <span class="hljs-constructor">ClassWriter(<span class="hljs-params">cr</span>, 0)</span><br>        ScanClassVisitor cv = <span class="hljs-keyword">new</span> <span class="hljs-constructor">ScanClassVisitor(Opcodes.ASM5, <span class="hljs-params">cw</span>)</span><br>        cr.accept(cv, ClassReader.EXPAND_FRAMES)<br>        inputStream.close<span class="hljs-literal">()</span><br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>把文件流丢给ScanClassVisitor</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs angelscript">static <span class="hljs-keyword">class</span> <span class="hljs-symbol">ScanClassVisitor</span> <span class="hljs-symbol">extends</span> <span class="hljs-symbol">ClassVisitor</span> &#123;<br><br>       ScanClassVisitor(<span class="hljs-built_in">int</span> api, ClassVisitor cv) &#123;<br>           <span class="hljs-keyword">super</span>(api, cv)<br>       &#125;<br><br>       <span class="hljs-built_in">void</span> visit(<span class="hljs-built_in">int</span> version, <span class="hljs-built_in">int</span> access, String name, String signature,<br>                  String superName, String[] <span class="hljs-built_in">int</span>erfaces) &#123;<br>           <span class="hljs-keyword">super</span>.visit(version, access, name, signature, superName, <span class="hljs-built_in">int</span>erfaces)<br>           RegisterTransform.registerList.each &#123; ext -&gt;<br>               <span class="hljs-keyword">if</span> (ext.<span class="hljs-built_in">int</span>erfaceName &amp;&amp; <span class="hljs-built_in">int</span>erfaces != <span class="hljs-literal">null</span>) &#123;<br>                   <span class="hljs-built_in">int</span>erfaces.each &#123; itName -&gt;<br>                       <span class="hljs-keyword">if</span> (itName == ext.<span class="hljs-built_in">int</span>erfaceName) &#123;<br>                           ext.classList.add(name)<br>                       &#125;<br>                   &#125;<br>               &#125;<br>           &#125;<br>       &#125;<br>   &#125;<br></code></pre></td></tr></table></figure>
+
+<p>一看就明白，就是把<strong>所有实现了IRouteRoot、IInterceptorGroup、IProviderGroup接口的类存到集合中</strong>。</p>
+<p>接着看最后一步做了什么</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">if</span> (fileContainsInitClass) &#123;<br>            registerList.each &#123; ext -&gt;<br>                <span class="hljs-keyword">if</span> (ext.classList.is<span class="hljs-constructor">Empty()</span>) &#123;<br>                    <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Logger</span>.</span></span>e(<span class="hljs-string">&quot;No class implements found for interface:&quot;</span> + ext.interfaceName)<br>                &#125; <span class="hljs-keyword">else</span> &#123;<br>                    <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">RegisterCodeGenerator</span>.</span></span>insert<span class="hljs-constructor">InitCodeTo(<span class="hljs-params">ext</span>)</span><br>                &#125;<br>            &#125;<br>        &#125;<br></code></pre></td></tr></table></figure>
+<p>关键代码都在RegisterCodeGenerator这个类中，我只列关键代码。</p>
+<figure class="highlight haxe"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs haxe"><span class="hljs-keyword">private</span> byte[] referHackWhenInit(InputStream inputStream) &#123;<br>        ClassReader cr = <span class="hljs-keyword">new</span> <span class="hljs-type">ClassReader</span>(inputStream)<br>        ClassWriter cw = <span class="hljs-keyword">new</span> <span class="hljs-type">ClassWriter</span>(cr, <span class="hljs-number">0</span>)<br>        ClassVisitor cv = <span class="hljs-keyword">new</span> <span class="hljs-type">MyClassVisitor</span>(Opcodes.ASM5, cw)<br>        cr.accept(cv, ClassReader.EXPAND_FRAMES)<br>        <span class="hljs-keyword">return</span> cw.toByteArray()<br>    &#125;<br>    <br>MethodVisitor visitMethod(int access, <span class="hljs-keyword">String</span> name, <span class="hljs-keyword">String</span> desc,<br>                                  <span class="hljs-keyword">String</span> signature, <span class="hljs-keyword">String</span>[] exceptions) &#123;<br>            MethodVisitor mv = <span class="hljs-keyword">super</span>.visitMethod(access, name, desc, signature, exceptions)<br>            <span class="hljs-keyword">if</span> (name == <span class="hljs-string">&quot;loadRouterMap&quot;</span>) &#123;<br>                mv = <span class="hljs-keyword">new</span> <span class="hljs-type">RouteMethodVisitor</span>(Opcodes.ASM5, mv)<br>            &#125;<br>            <span class="hljs-keyword">return</span> mv<br>        &#125;<br></code></pre></td></tr></table></figure>
+<p>找到hook点loadRouterMap。hook点的设计特别巧妙，增强了代码的可读性。</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs pgsql"><span class="hljs-type">void</span> visitInsn(<span class="hljs-type">int</span> opcode) &#123;<br>            <span class="hljs-keyword">if</span> ((opcode &gt;= Opcodes.IRETURN &amp;&amp; opcode &lt;= Opcodes.<span class="hljs-keyword">RETURN</span>)) &#123;<br>                <span class="hljs-keyword">extension</span>.classList.<span class="hljs-keyword">each</span> &#123; <span class="hljs-type">name</span> -&gt;<br>                    mv.visitMethodInsn(Opcodes.INVOKESTATIC<br>                            , &quot;com/alibaba/android/arouter/core/LogisticsCenter&quot;<br>                            , &quot;register&quot;<br>                            , &quot;(Ljava/lang/String;)V&quot;<br>                            , <span class="hljs-keyword">false</span>)<br>                &#125;<br>            &#125;<br>            super.visitInsn(opcode)<br>        &#125;<br></code></pre></td></tr></table></figure>
+<p>调用LogisticsCenter的register方法，我们来看一下register方法做了什么。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">private</span> static void register(String className) &#123;<br>       <span class="hljs-keyword">if</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>is<span class="hljs-constructor">Empty(<span class="hljs-params">className</span>)</span>) &#123;<br>           <span class="hljs-keyword">try</span> &#123;<br>               Class&lt;?&gt; clazz = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Class</span>.</span></span><span class="hljs-keyword">for</span><span class="hljs-constructor">Name(<span class="hljs-params">className</span>)</span>;<br>               Object obj = clazz.get<span class="hljs-constructor">Constructor()</span>.<span class="hljs-keyword">new</span><span class="hljs-constructor">Instance()</span>;<br>               <span class="hljs-keyword">if</span> (obj instanceof IRouteRoot) &#123;<br>                   register<span class="hljs-constructor">RouteRoot((IRouteRoot)</span> obj);<br>               &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (obj instanceof IProviderGroup) &#123;<br>                   register<span class="hljs-constructor">Provider((IProviderGroup)</span> obj);<br>               &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (obj instanceof IInterceptorGroup) &#123;<br>                   register<span class="hljs-constructor">Interceptor((IInterceptorGroup)</span> obj);<br>               &#125; <span class="hljs-keyword">else</span> &#123;<br>                   logger.info(TAG, <span class="hljs-string">&quot;register failed, class name: &quot;</span> + className<br>                           + <span class="hljs-string">&quot; should implements one of IRouteRoot/IProviderGroup/IInterceptorGroup.&quot;</span>);<br>               &#125;<br>           &#125; catch (Exception e) &#123;<br>               logger.error(TAG,<span class="hljs-string">&quot;register class error:&quot;</span> + className);<br>           &#125;<br>       &#125;<br>   &#125;<br></code></pre></td></tr></table></figure>
+<p>所有实现了IRouteRoot、IInterceptorGroup、IProviderGroup接口的类都加入了Warehouse相对应的集合中。至此自动注册工作完成。</p>
+<p>插件注册涉及知识点</p>
+<ul>
+<li>1.自定义plugin、ASM</li>
+</ul>
+<h4>路由跳转</h4>
+
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span>get<span class="hljs-constructor">Instance()</span>.build(<span class="hljs-string">&quot;/home/test&quot;</span>).<span class="hljs-keyword">with</span><span class="hljs-constructor">String(<span class="hljs-string">&quot;key3&quot;</span>, <span class="hljs-string">&quot;888&quot;</span>)</span><br>                    .<span class="hljs-keyword">with</span><span class="hljs-constructor">Long(<span class="hljs-string">&quot;key1&quot;</span>, 666L)</span><br>                    .navigation(this)<br></code></pre></td></tr></table></figure>
+<p>先看build，new一个Postcard对象并给Postcard设置path和group。Postcard构造方法中new了一个bundler对象。PathReplaceService提供了动态改path的方式，后面细讲。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">protected Postcard build(String path, String group) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>is<span class="hljs-constructor">Empty(<span class="hljs-params">path</span>)</span><span class="hljs-operator"> || </span><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>is<span class="hljs-constructor">Empty(<span class="hljs-params">group</span>)</span>) &#123;<br>            throw <span class="hljs-keyword">new</span> <span class="hljs-constructor">HandlerException(Consts.TAG + <span class="hljs-string">&quot;Parameter is invalid!&quot;</span>)</span>;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            PathReplaceService pService = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span>get<span class="hljs-constructor">Instance()</span>.navigation(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">PathReplaceService</span>.</span></span><span class="hljs-keyword">class</span>);<br>            <span class="hljs-keyword">if</span> (null != pService) &#123;<br>                path = pService.<span class="hljs-keyword">for</span><span class="hljs-constructor">String(<span class="hljs-params">path</span>)</span>;<br>            &#125;<br>            return <span class="hljs-keyword">new</span> <span class="hljs-constructor">Postcard(<span class="hljs-params">path</span>, <span class="hljs-params">group</span>)</span>;<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>.withString(“key3”, “888”).withLong(“key1”, 666L)把参数设置给当前Postcard的bundle中。<br></p>
+<p>再看navigation方法</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs dart">protected <span class="hljs-built_in">Object</span> navigation(<span class="hljs-keyword">final</span> Context context, <span class="hljs-keyword">final</span> Postcard postcard, <span class="hljs-keyword">final</span> <span class="hljs-built_in">int</span> requestCode, <span class="hljs-keyword">final</span> NavigationCallback callback) &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            LogisticsCenter.completion(postcard);<br>        &#125; <span class="hljs-keyword">catch</span> (NoRouteFoundException ex) &#123;<br>            <span class="hljs-keyword">if</span> (debuggable()) &#123;<br>                Toast.makeText(mContext, <span class="hljs-string">&quot;There&#x27;s no route matched!\n&quot;</span> +<br>                        <span class="hljs-string">&quot; Path = [&quot;</span> + postcard.getPath() + <span class="hljs-string">&quot;]\n&quot;</span> +<br>                        <span class="hljs-string">&quot; Group = [&quot;</span> + postcard.getGroup() + <span class="hljs-string">&quot;]&quot;</span>, Toast.LENGTH_LONG).<span class="hljs-keyword">show</span>();<br>            &#125;<br><br>            <span class="hljs-keyword">if</span> (<span class="hljs-keyword">null</span> != callback) &#123;<br>                callback.onLost(postcard);<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                DegradeService degradeService = ARouter.getInstance().navigation(DegradeService.<span class="hljs-keyword">class</span>);<br>                <span class="hljs-keyword">if</span> (<span class="hljs-keyword">null</span> != degradeService) &#123;<br>                    degradeService.onLost(context, postcard);<br>                &#125;<br>            &#125;<br><br>            <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;<br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>先看第一部分，重点落在LogisticsCenter.completion(postcard)。内部主要做的是实例化当前group下的具体Route添加到Warehouse.routes，如果没找到就降级处理，两种方式（1.设置NavigationCallback 2.实现DegradeService）</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><code class="hljs dart">public synchronized <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> completion(Postcard postcard) &#123;<br>       RouteMeta routeMeta = Warehouse.routes.<span class="hljs-keyword">get</span>(postcard.getPath());<br>       <span class="hljs-keyword">if</span> (<span class="hljs-keyword">null</span> == routeMeta) &#123;<br>           Class&lt;? <span class="hljs-keyword">extends</span> IRouteGroup&gt; groupMeta = Warehouse.groupsIndex.<span class="hljs-keyword">get</span>(postcard.getGroup());<br>           <span class="hljs-keyword">if</span> (<span class="hljs-keyword">null</span> == groupMeta) &#123;<br>               <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> NoRouteFoundException(TAG + <span class="hljs-string">&quot;There is no route match the path [&quot;</span> + postcard.getPath() + <span class="hljs-string">&quot;], in group [&quot;</span> + postcard.getGroup() + <span class="hljs-string">&quot;]&quot;</span>);<br>           &#125; <span class="hljs-keyword">else</span> &#123;<br>               <span class="hljs-keyword">try</span> &#123;<br>                   IRouteGroup iGroupInstance = groupMeta.getConstructor().newInstance();<br>                   iGroupInstance.loadInto(Warehouse.routes);<br>                   Warehouse.groupsIndex.remove(postcard.getGroup());<br>               &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                   <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> HandlerException(TAG + <span class="hljs-string">&quot;Fatal exception when loading group meta. [&quot;</span> + e.getMessage() + <span class="hljs-string">&quot;]&quot;</span>);<br>               &#125;<br>               completion(postcard);<br>           &#125;<br>       &#125; <span class="hljs-keyword">else</span> &#123;<br>           postcard.setDestination(routeMeta.getDestination());<br>           postcard.setType(routeMeta.getType());<br>           postcard.setPriority(routeMeta.getPriority());<br>           postcard.setExtra(routeMeta.getExtra());<br><br>           <span class="hljs-built_in">Uri</span> rawUri = postcard.getUri();<br>           <span class="hljs-keyword">if</span> (<span class="hljs-keyword">null</span> != rawUri) &#123;<br>               <span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, <span class="hljs-built_in">String</span>&gt; resultMap = TextUtils.splitQueryParameters(rawUri);<br>               <span class="hljs-built_in">Map</span>&lt;<span class="hljs-built_in">String</span>, Integer&gt; paramsType = routeMeta.getParamsType();<br><br>               <span class="hljs-keyword">if</span> (MapUtils.isNotEmpty(paramsType)) &#123;<br>                   <span class="hljs-keyword">for</span> (<span class="hljs-built_in">Map</span>.Entry&lt;<span class="hljs-built_in">String</span>, Integer&gt; params : paramsType.entrySet()) &#123;<br>                       setValue(postcard,<br>                               params.getValue(),<br>                               params.getKey(),<br>                               resultMap.<span class="hljs-keyword">get</span>(params.getKey()));<br>                   &#125;<br>                   postcard.getExtras().putStringArray(ARouter.AUTO_INJECT, paramsType.keySet().toArray(<span class="hljs-keyword">new</span> <span class="hljs-built_in">String</span>[]&#123;&#125;));<br>               &#125;<br><br>               postcard.withString(ARouter.RAW_URI, rawUri.toString());<br>           &#125;<br><br>           <span class="hljs-keyword">switch</span> (routeMeta.getType()) &#123;<br>               <span class="hljs-keyword">case</span> PROVIDER:  <br>                   Class&lt;? <span class="hljs-keyword">extends</span> IProvider&gt; providerMeta = (Class&lt;? <span class="hljs-keyword">extends</span> IProvider&gt;) routeMeta.getDestination();<br>                   IProvider instance = Warehouse.providers.<span class="hljs-keyword">get</span>(providerMeta);<br>                   <span class="hljs-keyword">if</span> (<span class="hljs-keyword">null</span> == instance) &#123;<br>                       IProvider provider;<br>                       <span class="hljs-keyword">try</span> &#123;<br>                           provider = providerMeta.getConstructor().newInstance();<br>                           provider.init(mContext);<br>                           Warehouse.providers.put(providerMeta, provider);<br>                           instance = provider;<br>                       &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                           <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> HandlerException(<span class="hljs-string">&quot;Init provider failed! &quot;</span> + e.getMessage());<br>                       &#125;<br>                   &#125;<br>                   postcard.setProvider(instance);<br>                   postcard.greenChannel();<br>                   <span class="hljs-keyword">break</span>;<br>               <span class="hljs-keyword">case</span> FRAGMENT:<br>                   postcard.greenChannel();<br>               <span class="hljs-keyword">default</span>:<br>                   <span class="hljs-keyword">break</span>;<br>           &#125;<br>       &#125;<br>   &#125;<br></code></pre></td></tr></table></figure>
+<p>分析一下这段代码</p>
+<ul>
+<li>1.判断Warehouse的routes中对应path的RouteMeta是否为空，看过注解生成类其实我们知道RouteMeta保存了类的具体信息</li>
+<li>2.在集合中找到对应的group分组，然后实例化对应分组下的具体Route添加到集合中</li>
+<li>3.把RouteMeta的各种信息设置给当前postcard对象</li>
+<li>4.uri跳转的处理，uri跳转和普通跳转唯一的区别就是参数的剥离，普通跳转是直接设置的而uri是通过在链接中剥离的，其中参数的数据类型是在Routemeta的paramsType中设置的</li>
+<li>5.根据跳转的类型不同做不同处理。如果是服务，直接实例化当前服务调用init方法并设置给postcard。设置绿色通道；如果是fragment，设置绿色通道。所谓绿色通道就是不被拦截器拦截。</li>
+</ul>
+<p>第二个部分是处理拦截。我们稍后再讲<br><br>先看第三部分</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">private</span> Object <span class="hljs-constructor">_navigation(<span class="hljs-params">final</span> Context <span class="hljs-params">context</span>, <span class="hljs-params">final</span> Postcard <span class="hljs-params">postcard</span>, <span class="hljs-params">final</span> <span class="hljs-params">int</span> <span class="hljs-params">requestCode</span>, <span class="hljs-params">final</span> NavigationCallback <span class="hljs-params">callback</span>)</span> &#123;<br>       final Context currentContext = null<span class="hljs-operator"> == </span>context ? mContext : context;<br><br>       switch (postcard.get<span class="hljs-constructor">Type()</span>) &#123;<br>           case ACTIVITY:<br>               final Intent intent = <span class="hljs-keyword">new</span> <span class="hljs-constructor">Intent(<span class="hljs-params">currentContext</span>, <span class="hljs-params">postcard</span>.<span class="hljs-params">getDestination</span>()</span>);<br>               intent.put<span class="hljs-constructor">Extras(<span class="hljs-params">postcard</span>.<span class="hljs-params">getExtras</span>()</span>);<br><br>               <span class="hljs-built_in">int</span> flags = postcard.get<span class="hljs-constructor">Flags()</span>;<br>               <span class="hljs-keyword">if</span> (-<span class="hljs-number">1</span> != flags) &#123;<br>                   intent.set<span class="hljs-constructor">Flags(<span class="hljs-params">flags</span>)</span>;<br>               &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!(currentContext instanceof Activity)) &#123;<br>                   intent.set<span class="hljs-constructor">Flags(Intent.FLAG_ACTIVITY_NEW_TASK)</span>;<br>               &#125;<br><br>               String action = postcard.get<span class="hljs-constructor">Action()</span>;<br>               <span class="hljs-keyword">if</span> (!<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>is<span class="hljs-constructor">Empty(<span class="hljs-params">action</span>)</span>) &#123;<br>                   intent.set<span class="hljs-constructor">Action(<span class="hljs-params">action</span>)</span>;<br>               &#125;<br><br>               run<span class="hljs-constructor">InMainThread(<span class="hljs-params">new</span> Runnable()</span> &#123;<br>                   @Override<br>                   public void run<span class="hljs-literal">()</span> &#123;<br>                       start<span class="hljs-constructor">Activity(<span class="hljs-params">requestCode</span>, <span class="hljs-params">currentContext</span>, <span class="hljs-params">intent</span>, <span class="hljs-params">postcard</span>, <span class="hljs-params">callback</span>)</span>;<br>                   &#125;<br>               &#125;);<br><br>               break;<br>           case PROVIDER:<br>               return postcard.get<span class="hljs-constructor">Provider()</span>;<br>           case BOARDCAST:<br>           case CONTENT_PROVIDER:<br>           case FRAGMENT:<br>               Class fragmentMeta = postcard.get<span class="hljs-constructor">Destination()</span>;<br>               <span class="hljs-keyword">try</span> &#123;<br>                   Object instance = fragmentMeta.get<span class="hljs-constructor">Constructor()</span>.<span class="hljs-keyword">new</span><span class="hljs-constructor">Instance()</span>;<br>                   <span class="hljs-keyword">if</span> (instance instanceof Fragment) &#123;<br>                       ((Fragment) instance).set<span class="hljs-constructor">Arguments(<span class="hljs-params">postcard</span>.<span class="hljs-params">getExtras</span>()</span>);<br>                   &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (instance instanceof android.support.v4.app.Fragment) &#123;<br>                       ((android.support.v4.app.Fragment) instance).set<span class="hljs-constructor">Arguments(<span class="hljs-params">postcard</span>.<span class="hljs-params">getExtras</span>()</span>);<br>                   &#125;<br><br>                   return instance;<br>               &#125; catch (Exception ex) &#123;<br>                   logger.error(Consts.TAG, <span class="hljs-string">&quot;Fetch fragment instance error, &quot;</span> + <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">TextUtils</span>.</span></span>format<span class="hljs-constructor">StackTrace(<span class="hljs-params">ex</span>.<span class="hljs-params">getStackTrace</span>()</span>));<br>               &#125;<br>           case METHOD:<br>           case SERVICE:<br>           default:<br>               return null;<br>       &#125;<br><br>       return null;<br>   &#125;<br></code></pre></td></tr></table></figure>
+<p>看到这里是不是很亲切，这不就是我们平时常写的startActivity(intent,class)吗？如果是fragment的话反射调用Fragment构造方法返回fragment对象。provider也是返回<br>Provider对象。至此跳转这一块基本上都搞清楚了。</p>
+<h4>分析一下拦截器是怎么实现的</h4>
+之前讲了Aroute.init之后会将所有的拦截器实例化。我们看看_ARouter.afterInit()做了什么
+
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-function"><span class="hljs-title">afterInit</span>(<span class="hljs-params"></span>)</span> &#123;<br>        interceptorService = (InterceptorService) ARouter.getInstance().build(<span class="hljs-string">&quot;/arouter/service/interceptor&quot;</span>).navigation();<br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>使用自己的路由方法初始化interceptorService服务，没毛病。该服务的实现类是InterceptorServiceImpl，从前面的分析可以知道navigation会调用服务的init方法。看看init里面做了什么</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">@Override<br>   public void init(final Context context) &#123;<br>       <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">LogisticsCenter</span>.</span></span>executor.execute(<span class="hljs-keyword">new</span> <span class="hljs-constructor">Runnable()</span> &#123;<br>           @Override<br>           public void run<span class="hljs-literal">()</span> &#123;<br>               <span class="hljs-keyword">if</span> (<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">MapUtils</span>.</span></span>is<span class="hljs-constructor">NotEmpty(Warehouse.<span class="hljs-params">interceptorsIndex</span>)</span>) &#123;<br>                   <span class="hljs-keyword">for</span> (Map.Entry&lt;Integer, Class&lt;? extends IInterceptor&gt;&gt; entry : <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Warehouse</span>.</span></span>interceptorsIndex.entry<span class="hljs-constructor">Set()</span>) &#123;<br>                       Class&lt;? extends IInterceptor&gt; interceptorClass = entry.get<span class="hljs-constructor">Value()</span>;<br>                       <span class="hljs-keyword">try</span> &#123;<br>                           IInterceptor iInterceptor = interceptorClass.get<span class="hljs-constructor">Constructor()</span>.<span class="hljs-keyword">new</span><span class="hljs-constructor">Instance()</span>;<br>                           iInterceptor.init(context);<br>                           <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Warehouse</span>.</span></span>interceptors.add(iInterceptor);<br>                       &#125; catch (Exception ex) &#123;<br>                           throw <span class="hljs-keyword">new</span> <span class="hljs-constructor">HandlerException(TAG + <span class="hljs-string">&quot;ARouter init interceptor error! name = [&quot;</span> + <span class="hljs-params">interceptorClass</span>.<span class="hljs-params">getName</span>()</span> + <span class="hljs-string">&quot;], reason = [&quot;</span> + ex.get<span class="hljs-constructor">Message()</span> + <span class="hljs-string">&quot;]&quot;</span>);<br>                       &#125;<br>                   &#125;<br><br>                   interceptorHasInit = <span class="hljs-literal">true</span>;<br>               &#125;<br>           &#125;<br>       &#125;);<br>   &#125;<br></code></pre></td></tr></table></figure>
+<p>反射调用所有拦截器的构造函数实例化对象添加到Warehouse.interceptors并调用init方法，这里使用了object.wait和object.notifyAll保证子线程中的所有拦截器实例化完成。拦截的时机在前面已经提到过了，我们来看看具体的代码。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">if</span> (!postcard.is<span class="hljs-constructor">GreenChannel()</span>) &#123;<br>            interceptorService.<span class="hljs-keyword">do</span><span class="hljs-constructor">Interceptions(<span class="hljs-params">postcard</span>, <span class="hljs-params">new</span> InterceptorCallback()</span> &#123;<br>                @Override<br>                public void on<span class="hljs-constructor">Continue(Postcard <span class="hljs-params">postcard</span>)</span> &#123;<br>                    <span class="hljs-constructor">_navigation(<span class="hljs-params">context</span>, <span class="hljs-params">postcard</span>, <span class="hljs-params">requestCode</span>, <span class="hljs-params">callback</span>)</span>;<br>                &#125;<br><br>                @Override<br>                public void on<span class="hljs-constructor">Interrupt(Throwable <span class="hljs-params">exception</span>)</span> &#123;<br>                    <span class="hljs-keyword">if</span> (null != callback) &#123;<br>                        callback.on<span class="hljs-constructor">Interrupt(<span class="hljs-params">postcard</span>)</span>;<br>                    &#125;<br>                &#125;<br>            &#125;);<br></code></pre></td></tr></table></figure>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">@Override<br>   public void <span class="hljs-keyword">do</span><span class="hljs-constructor">Interceptions(<span class="hljs-params">final</span> Postcard <span class="hljs-params">postcard</span>, <span class="hljs-params">final</span> InterceptorCallback <span class="hljs-params">callback</span>)</span> &#123;<br>       <span class="hljs-keyword">if</span> (null != <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Warehouse</span>.</span></span>interceptors<span class="hljs-operator"> &amp;&amp; </span><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Warehouse</span>.</span></span>interceptors.size<span class="hljs-literal">()</span> &gt; <span class="hljs-number">0</span>) &#123;<br>           <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">LogisticsCenter</span>.</span></span>executor.execute(<span class="hljs-keyword">new</span> <span class="hljs-constructor">Runnable()</span> &#123;<br>               @Override<br>               public void run<span class="hljs-literal">()</span> &#123;<br>                   CancelableCountDownLatch interceptorCounter = <span class="hljs-keyword">new</span> <span class="hljs-constructor">CancelableCountDownLatch(Warehouse.<span class="hljs-params">interceptors</span>.<span class="hljs-params">size</span>()</span>);<br>                   <span class="hljs-keyword">try</span> &#123;<br>                       <span class="hljs-constructor">_excute(0, <span class="hljs-params">interceptorCounter</span>, <span class="hljs-params">postcard</span>)</span>;<br>                       interceptorCounter.await(postcard.get<span class="hljs-constructor">Timeout()</span>, TimeUnit.SECONDS);<br>                       <span class="hljs-keyword">if</span> (interceptorCounter.get<span class="hljs-constructor">Count()</span> &gt; <span class="hljs-number">0</span>) &#123;<br>                           callback.on<span class="hljs-constructor">Interrupt(<span class="hljs-params">new</span> HandlerException(<span class="hljs-string">&quot;The interceptor processing timed out.&quot;</span>)</span>);<br>                       &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (null != postcard.get<span class="hljs-constructor">Tag()</span>) &#123;   <br>                           callback.on<span class="hljs-constructor">Interrupt(<span class="hljs-params">new</span> HandlerException(<span class="hljs-params">postcard</span>.<span class="hljs-params">getTag</span>()</span>.<span class="hljs-keyword">to</span><span class="hljs-constructor">String()</span>));<br>                       &#125; <span class="hljs-keyword">else</span> &#123;<br>                           callback.on<span class="hljs-constructor">Continue(<span class="hljs-params">postcard</span>)</span>;<br>                       &#125;<br>                   &#125; catch (Exception e) &#123;<br>                       callback.on<span class="hljs-constructor">Interrupt(<span class="hljs-params">e</span>)</span>;<br>                   &#125;<br>               &#125;<br>           &#125;);<br>       &#125; <span class="hljs-keyword">else</span> &#123;<br>           callback.on<span class="hljs-constructor">Continue(<span class="hljs-params">postcard</span>)</span>;<br>       &#125;<br>   &#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">private</span> static void <span class="hljs-constructor">_excute(<span class="hljs-params">final</span> <span class="hljs-params">int</span> <span class="hljs-params">index</span>, <span class="hljs-params">final</span> CancelableCountDownLatch <span class="hljs-params">counter</span>, <span class="hljs-params">final</span> Postcard <span class="hljs-params">postcard</span>)</span> &#123;<br>        <span class="hljs-keyword">if</span> (index &lt; <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Warehouse</span>.</span></span>interceptors.size<span class="hljs-literal">()</span>) &#123;<br>            IInterceptor iInterceptor = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Warehouse</span>.</span></span>interceptors.get(index);<br>            iInterceptor.process(postcard, <span class="hljs-keyword">new</span> <span class="hljs-constructor">InterceptorCallback()</span> &#123;<br>                @Override<br>                public void on<span class="hljs-constructor">Continue(Postcard <span class="hljs-params">postcard</span>)</span> &#123;<br>                    counter.count<span class="hljs-constructor">Down()</span>;<br>                    <span class="hljs-constructor">_excute(<span class="hljs-params">index</span> + 1, <span class="hljs-params">counter</span>, <span class="hljs-params">postcard</span>)</span>;<br>                &#125;<br><br>                @Override<br>                public void on<span class="hljs-constructor">Interrupt(Throwable <span class="hljs-params">exception</span>)</span> &#123;<br>                    postcard.set<span class="hljs-constructor">Tag(<span class="hljs-params">null</span> <span class="hljs-operator">==</span> <span class="hljs-params">exception</span> ? <span class="hljs-params">new</span> HandlerException(<span class="hljs-string">&quot;No message.&quot;</span>)</span> : <span class="hljs-keyword">exception</span>.get<span class="hljs-constructor">Message()</span>);    <span class="hljs-comment">// save the exception message for backup.</span><br>                    counter.cancel<span class="hljs-literal">()</span>;<br>                &#125;<br>            &#125;);<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>使用CountDownLatch.await使得代码阻塞直到所有拦截器执行完成或者超时。拦截器process方法中需要调用callback.onContinue才能调用到counter.countDown()移交到下一个拦截器，这就解释了自定义的拦截器为什么一定要调用counter.countDown()</p>
+<h5>涉及知识点</h5>
+
+<ul>
+<li>1.线程间通信</li>
+<li>2.CountDownLatch</li>
+<li>3.Object.wait/Object.notify</li>
+</ul>
+<h4>降级处理</h4>
+两种方式：1.navigation的时候添加NavigationCallback回调 2.写一个类实现DegradeService别忘了添加@Route path可以随意 第一种比较简单我么不讲，讲一下第二种方式
+
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs kotlin"><span class="hljs-meta">@Route(path = <span class="hljs-meta-string">&quot;/app/degrade1&quot;</span>)</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DegradeServiceImpl</span> : <span class="hljs-type">DegradeService &#123;</span></span><br>    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">onLost</span><span class="hljs-params">(context: <span class="hljs-type">Context</span>?, postcard: <span class="hljs-type">Postcard</span>?)</span></span> &#123;<br>        Log.e(<span class="hljs-string">&quot;降级处理&quot;</span>,<span class="hljs-string">&quot;自定义降级处理&quot;</span>)<br>    &#125;<br><br>    <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">fun</span> <span class="hljs-title">init</span><span class="hljs-params">(context: <span class="hljs-type">Context</span>?)</span></span> &#123;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>生成的注解类在ARouter?Providers?app中，也是init的时候就把映射关系添加到集合中。调用的地方是在navigation中，这段代码也间接的说明了NavigationCallback的优先级高于全局降级处理。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">if</span> (null != callback) &#123;<br>                callback.on<span class="hljs-constructor">Lost(<span class="hljs-params">postcard</span>)</span>;<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                DegradeService degradeService = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span>get<span class="hljs-constructor">Instance()</span>.navigation(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">DegradeService</span>.</span></span><span class="hljs-keyword">class</span>);<br>                <span class="hljs-keyword">if</span> (null != degradeService) &#123;<br>                    degradeService.on<span class="hljs-constructor">Lost(<span class="hljs-params">context</span>, <span class="hljs-params">postcard</span>)</span>;<br>                &#125;<br>            &#125;<br></code></pre></td></tr></table></figure>
+<p>关键代码是下面一段代码，诠释了服务的navigation是如何运行的</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">protected &lt;T&gt; T navigation(Class&lt;? extends T&gt; service) &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            Postcard postcard = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">LogisticsCenter</span>.</span></span>build<span class="hljs-constructor">Provider(<span class="hljs-params">service</span>.<span class="hljs-params">getName</span>()</span>);<br>            <span class="hljs-keyword">if</span> (null<span class="hljs-operator"> == </span>postcard) &#123;<br>                postcard = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">LogisticsCenter</span>.</span></span>build<span class="hljs-constructor">Provider(<span class="hljs-params">service</span>.<span class="hljs-params">getSimpleName</span>()</span>);<br>            &#125;<br><br>            <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">LogisticsCenter</span>.</span></span>completion(postcard);<br>            return (T) postcard.get<span class="hljs-constructor">Provider()</span>;<br>        &#125; catch (NoRouteFoundException ex) &#123;<br>            logger.warning(Consts.TAG, ex.get<span class="hljs-constructor">Message()</span>);<br>            return null;<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>buildProvider是根据service的名字从集合中找到对应的RouteMeta并把path和group设置给postcard，接下来也是给postcard设置其他各种参数，和上面分析的大同小异。</p>
+<h4>path动态改变</h4>
+调用的方式和降级处理一模一样，时机是在build的时候。
+
+<h4>参数自动获取（uri方式跳转参数必须加Autowired标记）</h4>
+
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs less"><span class="hljs-variable">@Autowired</span><br><span class="hljs-variable">@JvmField</span><br>var <span class="hljs-attribute">key3</span>: String? = null<br><span class="hljs-variable">@Autowired</span><br><span class="hljs-variable">@JvmField</span><br>var <span class="hljs-attribute">key1</span>: Long = <span class="hljs-number">0</span>L<br><br>ARouter.getInstance().inject(this)<br></code></pre></td></tr></table></figure>
+<p>从文档中可以知道，按照上面的方式就可以自动获取各个参数。关键代码肯定是在inject方法中，调用的还是服务。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-function"><span class="hljs-title">inject</span>(<span class="hljs-params"><span class="hljs-built_in">Object</span> thiz</span>)</span> &#123;<br>        AutowiredService autowiredService = ((AutowiredService) ARouter.getInstance().build(<span class="hljs-string">&quot;/arouter/service/autowired&quot;</span>).navigation());<br>        <span class="hljs-keyword">if</span> (<span class="hljs-literal">null</span> != autowiredService) &#123;<br>            autowiredService.autowire(thiz);<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>看看AutowiredService的autowire方法</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">@Override<br>   public void autowire(Object instance) &#123;<br>       String className = instance.get<span class="hljs-constructor">Class()</span>.get<span class="hljs-constructor">Name()</span>;<br>       <span class="hljs-keyword">try</span> &#123;<br>           <span class="hljs-keyword">if</span> (!blackList.contains(className)) &#123;<br>               ISyringe autowiredHelper = classCache.get(className);<br>               <span class="hljs-keyword">if</span> (null<span class="hljs-operator"> == </span>autowiredHelper) &#123;<br>                   autowiredHelper = (ISyringe) <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Class</span>.</span></span><span class="hljs-keyword">for</span><span class="hljs-constructor">Name(<span class="hljs-params">instance</span>.<span class="hljs-params">getClass</span>()</span>.get<span class="hljs-constructor">Name()</span> + SUFFIX_AUTOWIRED).get<span class="hljs-constructor">Constructor()</span>.<span class="hljs-keyword">new</span><span class="hljs-constructor">Instance()</span>;<br>               &#125;<br>               autowiredHelper.inject(instance);<br>               classCache.put(className, autowiredHelper);<br>           &#125;<br>       &#125; catch (Exception ex) &#123;<br>           blackList.add(className);<br>       &#125;<br>   &#125;<br></code></pre></td></tr></table></figure>
+<p>最关键的方法是XXclass_?ARouter?Autowired.inject，其实这个类还是在注解生成类中</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">public <span class="hljs-keyword">class</span> TestOneActivity?ARouter?Autowired implements ISyringe &#123;<br>  <span class="hljs-keyword">private</span> SerializationService serializationService;<br><br>  @Override<br>  public void inject(Object target) &#123;<br>    serializationService = <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span>get<span class="hljs-constructor">Instance()</span>.navigation(<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">SerializationService</span>.</span></span><span class="hljs-keyword">class</span>);<br>    TestOneActivity substitute = (TestOneActivity)target;<br>    substitute.key3 = substitute.get<span class="hljs-constructor">Intent()</span>.get<span class="hljs-constructor">StringExtra(<span class="hljs-string">&quot;girl&quot;</span>)</span>;<br>    substitute.key1 = substitute.get<span class="hljs-constructor">Intent()</span>.get<span class="hljs-constructor">LongExtra(<span class="hljs-string">&quot;key1&quot;</span>, <span class="hljs-params">substitute</span>.<span class="hljs-params">key1</span>)</span>;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>还是通过getIntent().getExtra方法获取的参数，然后把获取的参数设置给当前类。</p>
+<h4>分析完源码之后扪心自问一下下面问题是否能回答上来</h4>
+
+<ul>
+<li>1.openLog和openDebug为什么要在init之前？</li>
+<li>2.非Debug环境如何升级路由表——即添加路由？</li>
+<li>3.为什么要自定义线程池？线程池抛出错误的方式有哪几种？</li>
+<li>4.activity的跳转是怎么实现的？</li>
+<li>5.fragment实例是怎么拿到的？为什么不允许拦截？</li>
+<li>6.服务是如何调用的？</li>
+<li>7.path能动态修改吗？在哪个时机修改的？</li>
+<li>8.uri方式是如何跳转的？</li>
+<li>9.路由跳转能否在子线程中？</li>
+<li>10.拦截器怎么实现的？初始化的时机？为什么要在process调用callback.onContinue()。各个拦截器之间的优先级是如何保证的（是在跳转的时候根据priority判断的吗）</li>
+<li>11.全局降级处理怎么实现的，和NavigationCallback谁优先级更高？</li>
+<li>12.如何对path进行预处理，让所有路由失效？</li>
+<li>13.实现多个类继承PathReplaceService、PretreatmentService实际会用哪个。</li>
+</ul>
+<h4>个人的一些思考，大家可以讨论一下</h4>
+
+<ul>
+<li>1.Fragment未做onActivityResult回调支持，对Fragment的场景还是偏简单了。</li>
+<li>2.插件化是怎么实现路由表的升级的。</li>
+<li>3.自动注册路由表的plugin考虑做增量和并发编译处理，效率有待商榷。</li>
+<li>4.注解实现类的取名Group和path比较容易混淆。</li>
+<li>5.组件跳转结果无法拿到(造成url跳转发起方——比如前端，没有callback，无状态)</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E6%BA%90%E7%A0%81/">源码</a>
+                    
+                      <a class="hover-with-bg" href="/tags/arouter/">arouter</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E8%B7%AF%E7%94%B1/">路由</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/07/07/jsbridge/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">JsBridge源码详解</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/07/07/interview/">
+                        <span class="hidden-mobile">小菜鸟想去大厂的神秘宝典</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+      typing(title)
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

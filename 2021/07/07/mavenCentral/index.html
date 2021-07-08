@@ -1,0 +1,557 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="最近一则JCenter将要关闭的消息搞得人心惶惶！我们知道之前有非常多的三方库是托管在Jcenter上的，甚至不少库有可能没有同步到其他远程仓库。一旦JCenter关闭，我们的项目编译都会受到影响">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+  <title>手把手教你发布Android库到MavenCentral - 刘小帅的技术分享</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>刘小帅的博客</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/banner_3.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="手把手教你发布Android库到MavenCentral">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-07-07 17:46" pubdate>
+        2021年7月7日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.4k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      31
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">手把手教你发布Android库到MavenCentral</h1>
+            
+            <div class="markdown-body">
+              <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近一则JCenter将要关闭的消息搞得人心惶惶。作为Google默认钦定的开源远程仓库，这么些年估计免费帮Google干活干腻了。抛开两家公司的利益冲突，我们来聊一下对我们开发的影响。我们知道之前有非常多的三方库是托管在Jcenter上的，甚至不少库有可能没有同步到其他远程仓库。一旦JCenter关闭，我们的项目编译甚至都会受到影响。</p>
+<h5 id="小提示"><a href="#小提示" class="headerlink" title="小提示"></a>小提示</h5><p>万一直到Jencter关闭的时候，项目中有使用到还没来得及迁移的库。我们可以配置一下阿里云的镜像，阿里云镜像会同步各大远程仓库。在根build.gradle添加如下配置：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-section">maven</span> &#123;<span class="hljs-attribute">url</span> <span class="hljs-string">&#x27;https://maven.aliyun.com/repository/public&#x27;</span>&#125;<br></code></pre></td></tr></table></figure>
+<p>各大仓库对应的镜像如下表所示</p>
+<table>
+<thead>
+<tr>
+<th>仓库名称</th>
+<th>阿里云仓库地址</th>
+<th>源地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mavenCentral</td>
+<td><a target="_blank" rel="noopener" href="https://maven.aliyun.com/repository/central">https://maven.aliyun.com/repository/central</a></td>
+<td><a target="_blank" rel="noopener" href="https://repo1.maven.org/maven2/">https://repo1.maven.org/maven2/</a></td>
+</tr>
+<tr>
+<td>Jcenter</td>
+<td><a target="_blank" rel="noopener" href="https://maven.aliyun.com/repository/public">https://maven.aliyun.com/repository/public</a></td>
+<td><a target="_blank" rel="noopener" href="http://jcenter.bintray.com/">http://jcenter.bintray.com/</a></td>
+</tr>
+<tr>
+<td>public</td>
+<td><a target="_blank" rel="noopener" href="https://maven.aliyun.com/repository/public">https://maven.aliyun.com/repository/public</a></td>
+<td>central仓和jcenter仓的聚合仓</td>
+</tr>
+<tr>
+<td>google</td>
+<td><a target="_blank" rel="noopener" href="https://maven.aliyun.com/repository/google">https://maven.aliyun.com/repository/google</a></td>
+<td><a target="_blank" rel="noopener" href="https://maven.google.com/">https://maven.google.com/</a></td>
+</tr>
+</tbody></table>
+<h5 id="官方信息"><a href="#官方信息" class="headerlink" title="官方信息"></a>官方信息</h5><p><img src="/img/mavenCentral_1.png" srcset="/img/loading.gif" lazyload></p>
+<p>从jFrog官方的说明来看，自2021年3月1号开始，JFrog将不再接受任何新的提交，包括新库的提交和老库的更新。不过之前提交的还是可以继续使用到2022年2月1日。</p>
+<p><img src="/img/mavenCentral_2.png" srcset="/img/loading.gif" lazyload></p>
+<p>最新版本的Android Studio也提示了JCenter将废弃。<br>看来情况还没有那么糟糕，JCenter不会立马关闭，JFrog还是预留了一点时间让我们做库迁移的。话虽如此，我们还是要尽早迁移，尤其是做sdk开发的。那么该往哪儿迁移呢？让我们来对比下目前市面上的几大远程仓库：</p>
+<ul>
+<li>Google 谷歌自用，不给广大开发者使用，还真是小气</li>
+<li>Jcenter 性能和存储大小有优势，这也是之前google默认使用它的原因</li>
+<li>mavenCentral 和JCenter齐名，发布流程比较长，对开发者不友好</li>
+</ul>
+<p>对比了之后我们别无选择只能迁移到MavenCentral,接下来就来讲一下如何将库发布到MavenCentral。</p>
+<h3 id="注册"><a href="#注册" class="headerlink" title="注册"></a>注册</h3><p>与jCenter是由jForg运营，在bintray.com做管理一样，Maven Central是由sonatype运营的，那么首先需要去注册一个sonatype的账号并获得仓库使用许可。</p>
+<p>先前往<a target="_blank" rel="noopener" href="https://issues.sonatype.org/">https://issues.sonatype.org</a>注册账号，界面如图：</p>
+<p><img src="/img/mavenCentral_3.png" srcset="/img/loading.gif" lazyload></p>
+<p>注册完登录进去之后需要提一个Issue，sonatype创建仓库以Issue的形式。</p>
+<p><img src="/img/mavenCentral_4.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="/img/mavenCentral_5.png" srcset="/img/loading.gif" lazyload></p>
+<p>其他按要求填写即可，最重要的是Group Id。之后提交的所有库都是在这个Group Id下，最简单的命名是以io.github开头后跟github的名字,如io.github.liulingfeng。当然也可以按照你的域名翻转作为你的Group Id。两者认证方式不同，以io.github.liulingfeng为Group Id的只需要在github上创建一个public的项目就行；使用自己的域名，需要按照官方的要求，在DNS配置配置一个TXT记录指向你的Github地址来完成验证，比较麻烦，具体参考<a target="_blank" rel="noopener" href="https://central.sonatype.org/publish/">https://central.sonatype.org/publish/</a>。</p>
+<p>申请后请耐心等待官方的回复，待issues状态变为已解决，那么就说明申请成功了，如果有任何错误，审核人员会在下方给出注释，你也可以通过备注回复审核人员完成申请。</p>
+<p><img src="/img/mavenCentral_6.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="/img/mavenCentral_7.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="Gradle-配置"><a href="#Gradle-配置" class="headerlink" title="Gradle 配置"></a>Gradle 配置</h3><h5 id="首先引入dokka-gradle-plugin插件"><a href="#首先引入dokka-gradle-plugin插件" class="headerlink" title="首先引入dokka-gradle-plugin插件"></a>首先引入dokka-gradle-plugin插件</h5><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs gradle"><span class="hljs-keyword">classpath</span> <span class="hljs-string">&quot;org.jetbrains.dokka:dokka-gradle-plugin:1.4.10.2&quot;</span><br></code></pre></td></tr></table></figure>
+<h5 id="在需要发布的Moudle根目录下创建publish-gradle文件"><a href="#在需要发布的Moudle根目录下创建publish-gradle文件" class="headerlink" title="在需要发布的Moudle根目录下创建publish.gradle文件"></a>在需要发布的Moudle根目录下创建publish.gradle文件</h5><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><code class="hljs gradle">apply plugin: <span class="hljs-string">&#x27;maven-publish&#x27;</span><br>apply plugin: <span class="hljs-string">&#x27;signing&#x27;</span><br><br><span class="hljs-keyword">task</span> androidSourcesJar(type: Jar) &#123;<br>    classifier = <span class="hljs-string">&#x27;sources&#x27;</span><br>&#125;<br><br>ext &#123;<br>    PUBLISH_GROUP_ID = <span class="hljs-string">&#x27;Group Id&#x27;</span><br>    PUBLISH_ARTIFACT_ID = <span class="hljs-string">&#x27;Artifact Id&#x27;</span><br>    PUBLISH_VERSION = <span class="hljs-string">&#x27;版本号&#x27;</span><br>&#125;<br><br>ext[<span class="hljs-string">&quot;signing.keyId&quot;</span>] = <span class="hljs-string">&#x27;&#x27;</span><br>ext[<span class="hljs-string">&quot;signing.password&quot;</span>] = <span class="hljs-string">&#x27;&#x27;</span><br>ext[<span class="hljs-string">&quot;signing.secretKeyRingFile&quot;</span>] = <span class="hljs-string">&#x27;&#x27;</span><br>ext[<span class="hljs-string">&quot;ossrhUsername&quot;</span>] = <span class="hljs-string">&#x27;&#x27;</span><br>ext[<span class="hljs-string">&quot;ossrhPassword&quot;</span>] = <span class="hljs-string">&#x27;&#x27;</span><br><br><span class="hljs-keyword">File</span> secretPropsFile = <span class="hljs-keyword">project</span>.rootProject.<span class="hljs-keyword">file</span>(<span class="hljs-string">&#x27;local.properties&#x27;</span>)<br><span class="hljs-keyword">if</span> (secretPropsFile.exists()) &#123;<br>    <span class="hljs-keyword">println</span> <span class="hljs-string">&quot;Found secret props file, loading props&quot;</span><br>    Properties p = <span class="hljs-keyword">new</span> Properties()<br>    p.load(<span class="hljs-keyword">new</span> FileInputStream(secretPropsFile))<br>    p.<span class="hljs-keyword">each</span> &#123; name, value -&gt;<br>        ext[name] = value<br>    &#125;<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    <span class="hljs-keyword">println</span> <span class="hljs-string">&quot;No props file, loading env vars&quot;</span><br>&#125;<br>publishing &#123;<br>    publications &#123;<br>        release(MavenPublication) &#123;<br>            <span class="hljs-comment">// The coordinates of the library, being set from variables that</span><br>            <span class="hljs-comment">// we&#x27;ll set up in a moment</span><br>            groupId PUBLISH_GROUP_ID<br>            artifactId PUBLISH_ARTIFACT_ID<br>            version PUBLISH_VERSION<br>            <br>            <span class="hljs-comment">// Two artifacts, the `aar` and the sources</span><br>            artifact(<span class="hljs-string">&quot;$buildDir/outputs/aar/$&#123;project.getName()&#125;-release.aar&quot;</span>)<br>            artifact androidSourcesJar<br><br>            <span class="hljs-comment">// Self-explanatory metadata for the most part</span><br>            pom &#123;<br>                name = PUBLISH_ARTIFACT_ID<br>                <span class="hljs-keyword">description</span> = <span class="hljs-string">&#x27;描述信息&#x27;</span><br>                <span class="hljs-comment">// If your project has a dedicated site, use its URL here</span><br>                url = <span class="hljs-string">&#x27;官网&#x27;</span><br>                licenses &#123;<br>                    license &#123;<br>                        <span class="hljs-comment">//协议类型，一般默认Apache License2.0的话不用改：</span><br>                        name = <span class="hljs-string">&#x27;The Apache License, Version 2.0&#x27;</span><br>                        url = <span class="hljs-string">&#x27;http://www.apache.org/licenses/LICENSE-2.0.txt&#x27;</span><br>                    &#125;<br>                &#125;<br>                developers &#123;<br>                    developer &#123;<br>                        id = <span class="hljs-string">&#x27;sonatype注册的用户名&#x27;</span><br>                        name = <span class="hljs-string">&#x27;sonatype注册的用户名&#x27;</span><br>                        email = <span class="hljs-string">&#x27;sonatype注册的邮箱&#x27;</span><br>                    &#125;<br>                &#125;<br>                <span class="hljs-comment">// Version control info, if you&#x27;re using GitHub, follow the format as seen here</span><br>                scm &#123;<br>                    <span class="hljs-comment">//修改成你的Git地址：</span><br>                    connection = <span class="hljs-string">&#x27;scm:git:项目git地址&#x27;</span><br>                    developerConnection = <span class="hljs-string">&#x27;scm:git:项目git ssh地址&#x27;</span><br>                    <span class="hljs-comment">//分支地址：</span><br>                    url = <span class="hljs-string">&#x27;分支&#x27;</span><br>                &#125;<br>                <span class="hljs-comment">// A slightly hacky fix so that your POM will include any transitive dependencies</span><br>                <span class="hljs-comment">// that your library builds upon</span><br>                withXml &#123;<br>                    <span class="hljs-keyword">def</span> dependenciesNode = asNode().appendNode(<span class="hljs-string">&#x27;dependencies&#x27;</span>)<br><br>                    <span class="hljs-keyword">project</span>.<span class="hljs-keyword">configurations</span>.implementation.allDependencies.<span class="hljs-keyword">each</span> &#123;<br>                        <span class="hljs-keyword">def</span> dependencyNode = dependenciesNode.appendNode(<span class="hljs-string">&#x27;dependency&#x27;</span>)<br>                        dependencyNode.appendNode(<span class="hljs-string">&#x27;groupId&#x27;</span>, it.<span class="hljs-keyword">group</span>)<br>                        dependencyNode.appendNode(<span class="hljs-string">&#x27;artifactId&#x27;</span>, it.name)<br>                        dependencyNode.appendNode(<span class="hljs-string">&#x27;version&#x27;</span>, it.version)<br>                    &#125;<br>                &#125;<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">repositories</span> &#123;<br>        <span class="hljs-comment">// The repository to publish to, Sonatype/MavenCentral</span><br>        maven &#123;<br>            <span class="hljs-comment">// This is an arbitrary name, you may also use &quot;mavencentral&quot; or</span><br>            <span class="hljs-comment">// any other name that&#x27;s descriptive for you</span><br>            name = <span class="hljs-string">&quot;mavencentral&quot;</span><br><br>            <span class="hljs-keyword">def</span> releasesRepoUrl = <span class="hljs-string">&quot;https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/&quot;</span><br>            <span class="hljs-keyword">def</span> snapshotsRepoUrl = <span class="hljs-string">&quot;https://s01.oss.sonatype.org/content/repositories/snapshots/&quot;</span><br>            <span class="hljs-comment">// You only need this if you want to publish snapshots, otherwise just set the URL</span><br>            <span class="hljs-comment">// to the release repo directly</span><br>            url = version.endsWith(<span class="hljs-string">&#x27;SNAPSHOT&#x27;</span>) ? snapshotsRepoUrl : releasesRepoUrl<br><br>            <span class="hljs-comment">// The username and password we&#x27;ve fetched earlier</span><br>            credentials &#123;<br>                username ossrhUsername<br>                password ossrhPassword<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br>signing &#123;<br>    sign publishing.publications<br>&#125;<br></code></pre></td></tr></table></figure>
+<h5 id="在需要发布的Moudle的build-gradle中添加对publish-gradle的依赖"><a href="#在需要发布的Moudle的build-gradle中添加对publish-gradle的依赖" class="headerlink" title="在需要发布的Moudle的build.gradle中添加对publish.gradle的依赖"></a>在需要发布的Moudle的build.gradle中添加对publish.gradle的依赖</h5><figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sqf"><span class="hljs-built_in">apply</span> <span class="hljs-keyword">from</span>: <span class="hljs-string">&quot;./publish.gradle&quot;</span><br></code></pre></td></tr></table></figure>
+<h5 id="创建GPG秘钥-下面是mac教程，windows自行查找"><a href="#创建GPG秘钥-下面是mac教程，windows自行查找" class="headerlink" title="创建GPG秘钥(下面是mac教程，windows自行查找)"></a>创建GPG秘钥(下面是mac教程，windows自行查找)</h5><ol>
+<li><p>在<a target="_blank" rel="noopener" href="https://www.gnupg.org/download/">https://www.gnupg.org/download/</a>下载GPG客户端</p>
+<p> <img src="/img/mavenCentral_8.png" srcset="/img/loading.gif" lazyload></p>
+</li>
+<li><p>在命令行中执行命令gpg –full-gen-key</p>
+</li>
+<li><p>加密方式选择RSA and RSA，长度输入4096，过期时间直接回车不用管，然后输入一个user ID并且提供一个邮箱，我直接用的我sonatype的用户名和邮箱。最后一步输入’O’，表示OK</p>
+</li>
+</ol>
+<p><img src="/img/mavenCentral_9.png" srcset="/img/loading.gif" lazyload></p>
+<ol start="4">
+<li>之后会弹出一个对话框，让输入密码。这会为你在~/.gnupg/openpgp-revocs.d/目录下创建一个.rev文件，记住pub的末尾8位</li>
+<li>创建secring.gpg文件，命令行执行gpg –export-secret-keys -o secring.gpg，这会要求你输入在步骤4中设置的密码，在你用户根目录下会出现secring.gpg文件</li>
+<li>回到gpg客户端，选择我们刚生成的秘钥条目，右键，选择Send Public Key to Key Server<h5 id="在local-properties添加如下配置"><a href="#在local-properties添加如下配置" class="headerlink" title="在local.properties添加如下配置"></a>在local.properties添加如下配置</h5><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">signing.keyId</span>=刚才生成的.rev文件秘钥后<span class="hljs-number">8</span>位<br><span class="hljs-attr">signing.password</span>=步骤<span class="hljs-number">4</span>中设置的密码<br><span class="hljs-attr">signing.secretKeyRingFile</span>=刚才生成的secring.gpg文件目录<br><span class="hljs-attr">ossrhUsername</span>=sonatype用户名<br><span class="hljs-attr">ossrhPassword</span>=sonatype密码<br></code></pre></td></tr></table></figure>
+<h5 id="执行打包发布"><a href="#执行打包发布" class="headerlink" title="执行打包发布"></a>执行打包发布</h5>设置完这些后，在AndroidStudio右侧的gradle tasks中找到你想提交的module，先执行build生成产物</li>
+</ol>
+<p><img src="/img/mavenCentral_10.png" srcset="/img/loading.gif" lazyload></p>
+<p>接着执行generatePomFileForReleasePublication生成pom文件</p>
+<p><img src="/img/mavenCentral_11.png" srcset="/img/loading.gif" lazyload></p>
+<p>生成的pom文件在如图所示的位置，最好查看下生成的pom文件是否正确。pom文件直接影响到整个gradle依赖。</p>
+<p><img src="/img/mavenCentral_12.png" srcset="/img/loading.gif" lazyload>)</p>
+<p>最后执行publishReleasePublicationToMavencentralRepository发布</p>
+<p><img src="/img/mavenCentral_13.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="设置为所有人可见"><a href="#设置为所有人可见" class="headerlink" title="设置为所有人可见"></a>设置为所有人可见</h3><p>上传成功后，打开<a target="_blank" rel="noopener" href="https://s01.oss.sonatype.org/#welcome">https://s01.oss.sonatype.org/#welcome</a>，登录你的sonatype账号，在左侧Staging Repositories页面找到你的group id，点击上边的close，等待几分钟十几分钟后刷新状态。等其状态变为closed后，再点击Release，则所有人都能使用你的库了。</p>
+<p><img src="/img/mavenCentral_14.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><h5 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h5><p>理论上执行完上述流程之后远程依赖就可以正常使用了。神奇的是后面的某次发布过程中遇到了问题，设置完Release之后在Public Repository已经可以搜索到刚发布完的库。但是拉取远程依赖的时候死活拉不到，提示如下：</p>
+<p><img src="/img/mavenCentral_15.png" srcset="/img/loading.gif" lazyload></p>
+<p>我们知道远程依赖会从配置的中央仓库遍历去查找，最后一个地址就是mavenCentral对应的中央仓库，点进去提示是404。而其他之前发布成功的依赖能找到，这就非常神奇，我们有必要来重新梳理一下整个发布流程：</p>
+<p><img src="/img/mavenCentral_16.png" srcset="/img/loading.gif" lazyload></p>
+<p>后面两步是自动同步的，不需要我们操心。但就是自动同步出了问题，没有自动同步过去。实在没有办法，只好去sonatype提issue，这时候蹩脚的英语又派上了用场。</p>
+<p><img src="/img/mavenCentral_19.png" srcset="/img/loading.gif" lazyload></p>
+<p>原来是同步基础架构中的磁盘空间出了问题，真是虚惊一场。后面遇到什么发布问题都可以在sonatype提issue得到解决，注意老外的时差问题，尽量在老外上班时间提。</p>
+<h5 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h5><p>拉远程依赖的时候出现如下图所示的异常：</p>
+<p><img src="/img/mavenCentral_17.png" srcset="/img/loading.gif" lazyload></p>
+<p>怎么会出现 Could not find :unspecified 呢？其实问题的关键在生成的pom文件中：</p>
+<p><img src="/img/mavenCentral_18.png" srcset="/img/loading.gif" lazyload></p>
+<p>由于项目的依赖中有一项是本地jar依赖，所以会读不到group、name和version，值自然就是unspecified。读取的时候由于无法识别就报出了上述问题。解决方案也很简单，就是withXml的时候做一下过滤：</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">withXml &#123;<br>                   def dependenciesNode = <span class="hljs-keyword">as</span><span class="hljs-constructor">Node()</span>.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">dependencies</span>&#x27;)</span><br><br>                   project.configurations.implementation.allDependencies.each &#123;<br>                       <span class="hljs-keyword">if</span> (it.name != &#x27;unspecified&#x27;) &#123;<br>                           def dependencyNode = dependenciesNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">dependency</span>&#x27;)</span><br>                           dependencyNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">groupId</span>&#x27;, <span class="hljs-params">it</span>.<span class="hljs-params">group</span>)</span><br>                           dependencyNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">artifactId</span>&#x27;, <span class="hljs-params">it</span>.<span class="hljs-params">name</span>)</span><br>                           dependencyNode.append<span class="hljs-constructor">Node(&#x27;<span class="hljs-params">version</span>&#x27;, <span class="hljs-params">it</span>.<span class="hljs-params">version</span>)</span><br>                       &#125;<br>                   &#125;<br>               &#125;<br></code></pre></td></tr></table></figure>
+<p>哪个值是unspecified，就对哪个值做个判断，当然全加上更保险。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/sdk/">sdk</a>
+                    
+                      <a class="hover-with-bg" href="/tags/mavenCentral%E5%8F%91%E5%B8%83/">mavenCentral发布</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/07/07/jsbridge/">
+                        <span class="hidden-mobile">JsBridge源码详解</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+      typing(title)
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

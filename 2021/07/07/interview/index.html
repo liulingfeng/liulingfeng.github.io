@@ -14,11 +14,11 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
   <meta name="theme-color" content="#2f4154">
-  <meta name="description" content="你以为一劳永逸的pickFirst处理so冲突可能存在深坑，让我们一步步来解开其中的谜底，看看坑到底有多深">
+  <meta name="description" content="个人觉得年前11月份出去面最好。一个是竞争比较小，大厂的精英都在等着拿完年终奖或者年底双薪跑路。这时候你出去面试，面对的是同一水平的人，等到年后三四月份那就是神仙打架，鹿死谁手可就不知道了">
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
   
-  <title>被React Native插件狂虐2天之后，写下c++_share.so冲突处理心路历程 - 刘小帅的技术分享</title>
+  <title>小菜鸟想去大厂的神秘宝典 - 刘小帅的技术分享</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
 
@@ -158,12 +158,12 @@
 </nav>
 
     <div class="banner" id="banner" parallax=true
-         style="background: url('/img/banner_6.jpg') no-repeat center center;
+         style="background: url('/img/banner_1.jpg') no-repeat center center;
            background-size: cover;">
       <div class="full-bg-img">
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="被React Native插件狂虐2天之后，写下c++_share.so冲突处理心路历程">
+            <span class="h2" id="subtitle" title="小菜鸟想去大厂的神秘宝典">
               
             </span>
 
@@ -173,7 +173,7 @@
   
     <span class="post-meta">
       <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-      <time datetime="2021-07-07 12:57" pubdate>
+      <time datetime="2021-07-07 17:33" pubdate>
         2021年7月7日 下午
       </time>
     </span>
@@ -195,7 +195,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      15
+      13
        分钟
     </span>
   
@@ -225,96 +225,33 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">被React Native插件狂虐2天之后，写下c++_share.so冲突处理心路历程</h1>
+            <h1 style="display: none">小菜鸟想去大厂的神秘宝典</h1>
             
             <div class="markdown-body">
-              <h3 id="前情提要"><a href="#前情提要" class="headerlink" title="前情提要"></a>前情提要</h3><p>为了应对活体检测客户react-native端的支持，需要开发react-native插件供客户使用。关于react-native插件开发具体可以参考react官网：</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://reactnative.cn/docs/native-modules-android">https://reactnative.cn/docs/native-modules-android</a><br><a target="_blank" rel="noopener" href="https://reactnative.cn/docs/native-modules-ios">https://reactnative.cn/docs/native-modules-ios</a><br><a target="_blank" rel="noopener" href="https://reactnative.cn/docs/native-components-android">https://reactnative.cn/docs/native-components-android</a><br><a target="_blank" rel="noopener" href="https://reactnative.cn/docs/native-components-ios">https://reactnative.cn/docs/native-components-ios</a></p>
-</blockquote>
-<p>具体包含两部分</p>
-<ol>
-<li>ViewManager：包装原生的view供react-native的js部分使用</li>
-<li>NativeModule：提供原生的api能力供react-native的js部分调用</li>
-</ol>
-<h3 id="心路历程"><a href="#心路历程" class="headerlink" title="心路历程"></a>心路历程</h3><p>参考着官方事例，插件代码很快就完成。开开心心把插件发布到github之后试用了一下就遇到了第一个问题</p>
-<p><img src="/img/c++_1.png" srcset="/img/loading.gif" lazyload></p>
-<p>看错误很容易发现是so冲突了，也就是说react-native脚手架创建的项目原本就存在libc++_share.so，正好我们的活体检测sdk也存在libc++_shared.so。冲突的解决方法也很简单，在android域中添加如下配置：</p>
-<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">packagingOptions &#123;<br>    pickFirst &#x27;lib/arm64-v8a/libc++<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">_shared</span>.</span></span>so&#x27;<br>    pickFirst &#x27;lib/armeabi-v7a/libc++<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">_shared</span>.</span></span>so&#x27;<br>    pickFirst &#x27;lib/x86/libc++<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">_shared</span>.</span></span>so&#x27;<br>    pickFirst &#x27;lib/x86_64/libc++<span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">_shared</span>.</span></span>so&#x27;<br>&#125;<br></code></pre></td></tr></table></figure>
-<p>这边顺便解释下packagingOptions中几个关键字的意思和作用</p>
-<table>
-<thead>
-<tr>
-<th>关键字</th>
-<th>含义</th>
-<th>实例</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>doNotStrip</td>
-<td>可以设置某些动态库不被优化压缩</td>
-<td>doNotStrip ‘*/arm64-v8a/libc++_shared.so’</td>
-</tr>
-<tr>
-<td>pickFirst</td>
-<td>匹配到多个相同文件，只提取第一个</td>
-<td>pickFirst ‘lib/arm64-v8a/libc++_shared.so’</td>
-</tr>
-<tr>
-<td>exclude</td>
-<td>过滤掉某些文件或者目录不添加到APK中</td>
-<td>exclude ‘lib/arm64-v8a/libc++_shared.so’</td>
-</tr>
-<tr>
-<td>exclude</td>
-<td>将匹配的文件合并添加到APK中</td>
-<td>merge ‘lib/arm64-v8a/libc++_shared.so’</td>
-</tr>
-<tr>
-<td>上述例子中处理的方式是遇到冲突取第一个libc++_shared.so。冲突解决之后继续运行，打开摄像头过一会儿就崩溃了，报错如下：</td>
-<td></td>
-<td></td>
-</tr>
-</tbody></table>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::cout &lt;&lt; <span class="hljs-string">&quot;src: (&quot;</span> &lt;&lt; h &lt;&lt; <span class="hljs-string">&quot;, &quot;</span> &lt;&lt; w &lt;&lt; <span class="hljs-string">&quot;)&quot;</span> &lt;&lt; std::endl;<br></code></pre></td></tr></table></figure>
-<p>仅仅是简单的c++输出流，对功能本来没有影响。很好奇为什么会崩溃，查了好久一无所获。既然不影响功能就先删掉了这行代码，果然就不报错了，功能都能正常使用了，开开心心的交给测试回归。一切都是好好的，直到跑在arm64-v8a的设备上，出现了如下报错：</p>
-<p><img src="/img/c++_2.png" srcset="/img/loading.gif" lazyload></p>
-<p>这次有明显的报错信息，意思是当运行opencv_java3.so的时候缺少_sfp_handler_exception函数，这个函数实际上是在c++_shared.so库中的。奇怪的是原生代码运行在arm64-v8a的设备上是好的，那怎么跑在react-native环境就会缺少_sfp_handler_exception函数了呢？</p>
-<p>直到我在原生用ndk20a编译代码报了同样的错误，才意识到一切问题的源头是pickFirst引起的。</p>
-<p><img src="/img/c++_3.png" srcset="/img/loading.gif" lazyload></p>
-<p><img src="/img/c++_4.png" srcset="/img/loading.gif" lazyload></p>
-<p>可以明显的看到react-native和原生环境跑出来的apk包中c++_shared.so的大小是不同的。</p>
-<p>也就是说pickFirst是存在安全隐患的，就拿这个例子来说，假如两个c++_shared.so是用不同版本的ndk打出来的，其实内部的库函数是不一样的，pickFirst贸然选择第一个必然导致另外的库不兼容。那么是不是可以用merge合并两个c++_shared.so，试了一下针对so merge失效了，只能是另辟蹊径。</p>
-<p>如果我们的sdk只有一个库动态依赖于c++_shared.so，大可把c++_shared.so以静态库的方式打入，这样就不会有so冲突问题，同时也解决了上述问题。配置如下：</p>
-<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-class">externalNativeBuild </span>&#123;<br>    <span class="hljs-class">ndk </span>&#123;<br>        abiFilters <span class="hljs-string">&quot;armeabi-v7a&quot;</span>, <span class="hljs-string">&quot;arm64-v8a&quot;</span><br>    &#125;<br>    <span class="hljs-class">cmake </span>&#123;<br>        cppFlags <span class="hljs-string">&quot;-std=c++11 -frtti -fexceptions&quot;</span><br>        arguments <span class="hljs-string">&quot;-DANDROID_STL=c++_shared&quot;</span> <span class="hljs-comment">//shared改为static</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>可惜的是例子中的sdk不止一个库动态依赖于c++_shared.so，所以这条路也行不通。那么只能从react-native侧出发寻找方案。</p>
-<h4 id="方案一（推荐）"><a href="#方案一（推荐）" class="headerlink" title="方案一（推荐）"></a>方案一（推荐）</h4><p>找出react-native这边的c++_shared.so是基于什么ndk版本打出来的，想办法把两端的ndk版本保持统一，问题也就迎刃而解了。</p>
-<p><img src="/img/c++_5.png" srcset="/img/loading.gif" lazyload></p>
-<p>从react-native对应的android工程的蛛丝马迹中发现大概是基于ndk r20b打出来的。接下来就是改造sdk中c++_shared.so基于的ndk版本了。</p>
-<ol>
-<li>基于ndk r20b版本重新编译opencv库</li>
-<li>把opencv库连接到项目，基于ndk r20b版本重新编译alive_detected.so库</li>
-</ol>
-<p>把编译好的sdk重新导入插件升级，运行之后果然所有的问题得以解决。</p>
-<h4 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h4><p>去除react-native中的c++_shared.so库，react-native并不是一开始就引入了c++_shared.so。从<a target="_blank" rel="noopener" href="https://reactnative.cn/versions">React Native版本升级</a>中去查看c++_shared.so是哪个版本被引入的，可以发现0.59之前的版本是没有c++_shared.so库的，详见对比：</p>
-<p><img src="/img/c++_6.png" srcset="/img/loading.gif" lazyload></p>
-<p><img src="/img/c++_7.png" srcset="/img/loading.gif" lazyload></p>
-<p>那么我们把react-native版本降级为0.59以下也能解决问题，降级步骤如下：</p>
-<ol>
-<li>进入工程</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> Temple<br></code></pre></td></tr></table></figure>
-<ol start="2">
-<li>指定版本</li>
-</ol>
-<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">npm</span> install --save react-native@<span class="hljs-number">0</span>.<span class="hljs-number">58</span>.<span class="hljs-number">6</span><br></code></pre></td></tr></table></figure>
-<ol start="3">
-<li>更新<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs actionscript">react-<span class="hljs-keyword">native</span> upgrade<br></code></pre></td></tr></table></figure></li>
-<li>一路替换文件</li>
-</ol>
-<p><img src="/img/c++_8.png" srcset="/img/loading.gif" lazyload></p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Android开发会面临各种环境问题，遇到问题还是要从原理出发，理清问题发生的根源，这样问题就很好解决。</p>
+              <p>本文针对于学历出生不是很好又想进入大厂的猿猿。<br></p>
+<p>为什么是大厂？</p>
+<ul>
+<li>大环境的冲击——客三消的说法虽然有点夸张，但是现在对于客户端来说大环境确实不是很好。中小厂出于成本考虑会进一步缩减客户端人员的成本，大多数投入了小程序、RN、Flutter的怀抱。说句不好听的大厂才能养得起或者说愿意养客户端开发。</li>
+<li>大厂职级薪资健全，只要你面上了那个职级，即使不能拿到职级的最高薪也不会差到哪里去。而中小厂会根据你上家公司的薪资疯狂压你薪水，其次大厂相对于中小厂肯定好一些。当然也有薪资福利好的中小厂（麻烦告诉我咱家公司叫什么）。</li>
+<li>大厂职位多，内部转岗可选择性多。客户端毕竟不是长久之计。</li>
+</ul>
+<h3 id="时机"><a href="#时机" class="headerlink" title="时机"></a>时机</h3><p>个人觉得年前11月份出去面最好。一个是竞争比较小，大厂的精英都在等着拿完年终奖或者年底双薪跑路。这时候你出去面试，面对的是同一水平的人，等到年后三四月份那就是神仙打架，鹿死谁手可就不知道了；另一个是11月份hr们都在补足明年的人员，相对来说hc还是比较多的，等到1月份大多在忙年终年会的事，hc会少很多，流程也会走得很慢。提醒一句：随时做好失去年终奖的准备。<br></p>
+<p>真的等到11月份才出去面？我说的11月份当然不是让你真的等到11月份才出去，11月份出去的时候是我们必须拿下的。前后也就两个月时间，如果拿不下只能等来年再战了，所以我们不容有失。个人建议8、9月份出去试试水，试水也不能瞎逼试，找同等的或者高一等的大厂去试，千万不要去中小厂试，套路完全是不一样的。</p>
+<h3 id="简历"><a href="#简历" class="headerlink" title="简历"></a>简历</h3><p>简历不要乱写，不要把什么项目都写上。一个是根据公司招聘的JD，另一个是根据目前热门的技术。写项目业界有比较成熟的STAR法则，简单的说就是在什么项目你接到了什么任务做了什么产生了什么结果（有准确的数据更好）；JD针对性的东西可以多些。<br></p>
+<p>简历的亮点？第一个是有自己独到见解思考的项目，第二个对于客户端同学来说掌握前端、客户端和h5交互、跨端技术绝对是一个亮点，如果做过这方面项目也建议写上。<br></p>
+<p>能走内推就走内推，找高职级的人内推更好。</p>
+<h3 id="硬实力"><a href="#硬实力" class="headerlink" title="硬实力"></a>硬实力</h3><p>简历上写的项目一定要滚瓜烂熟，项目涉及什么知识点？这些知识点可以发散出什么知识点？这个项目给团队带来了什么？有没有做过横向的对比，为什么选择这个方案？方案还有没有优化空间？<br></p>
+<p>java基础和Android基础一定要掌握，该背八股文的就去背。java方面建议去看《Java编程的逻辑》,Android方面可以先看看《Android技术探索》。注意看的过程中多一些自己的思考。<br></p>
+<p>算法练习，现在越来越多的大厂会考察算法。至于为什么考察算法，一个是考验你这个人认不认真，有没有去好好准备；还有一个就是考验你聪不聪明。客户端算法题考察leetcode简单中等题，可以去leetcode做对应练习，有思路也一定要手写一下。一定要练得滚瓜烂熟，高压状态下很容易写错。如果觉得leetcode题目太多，有一个捷径——把《剑指offer》的题目都认真做一遍。<br></p>
+<p>设计模式准备几个，特别是和实际项目结合的，不要说来说去就一个单例。<br></p>
+<p>有针对性的放弃一些公司。如果觉得项目的知识点准备不全，就去面试阿里，阿里对于业务相关的东西问得特别细，会让你整体思考上一个台阶。要试自己的算法水平就去快手和头条其中一家面试，当然这也就意味着这家公司短时间可能与你无缘了，自己想好就行。</p>
+<h3 id="方法论"><a href="#方法论" class="headerlink" title="方法论"></a>方法论</h3><ul>
+<li>千万不要一股脑的狂投简历，杭州大厂就那么几家，且行且珍惜。</li>
+<li>先去自己不想去和觉得自己面不上的公司面。</li>
+<li>实在进不了大厂，可以先去不错的中厂，走迂回道路。</li>
+<li>被hr问手头上有没有offer的时候，简单的回答可以说在走流程，但是贵公司的职位对我来说更契合。说没有offer会被压薪资，后面也没有争取的资本。</li>
+</ul>
+<p>以上是自己一点小小的心得，希望可以给各位一点小小的帮助，不对的地方还望轻喷。</p>
 
             </div>
             <hr>
@@ -325,9 +262,11 @@
                   <div class="post-meta">
                     <i class="iconfont icon-tags"></i>
                     
-                      <a class="hover-with-bg" href="/tags/react-native/">react-native</a>
+                      <a class="hover-with-bg" href="/tags/%E9%9D%A2%E8%AF%95/">面试</a>
                     
-                      <a class="hover-with-bg" href="/tags/so%E5%86%B2%E7%AA%81/">so冲突</a>
+                      <a class="hover-with-bg" href="/tags/%E4%BA%92%E8%81%94%E7%BD%91/">互联网</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%A4%A7%E5%8E%82/">大厂</a>
                     
                   </div>
                 
@@ -344,9 +283,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2021/07/07/flutter%E4%BA%A7%E7%89%A9%E5%BD%92%E6%A1%A3/">
+                      <a href="/2021/07/07/arouter/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">『全网独一份』Flutter混合工程一键打aar上传Artifactory</span>
+                        <span class="hidden-mobile">ARouter路由跳转到底是怎么实现的？</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -354,8 +293,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2021/07/06/proguard%E8%A7%84%E5%88%99/">
-                        <span class="hidden-mobile">sdk 打包必备，proguard 混淆规则如何配置</span>
+                      <a href="/2021/07/07/flutter%E4%BA%A7%E7%89%A9%E5%BD%92%E6%A1%A3/">
+                        <span class="hidden-mobile">『全网独一份』Flutter混合工程一键打aar上传Artifactory</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
