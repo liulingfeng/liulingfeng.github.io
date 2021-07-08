@@ -270,13 +270,10 @@
 <td>将匹配的文件合并添加到APK中</td>
 <td>merge ‘lib/arm64-v8a/libc++_shared.so’</td>
 </tr>
-<tr>
-<td>上述例子中处理的方式是遇到冲突取第一个libc++_shared.so。冲突解决之后继续运行，打开摄像头过一会儿就崩溃了，报错如下：</td>
-<td></td>
-<td></td>
-</tr>
 </tbody></table>
+<p>上述例子中处理的方式是遇到冲突取第一个libc++_shared.so。冲突解决之后继续运行，打开摄像头过一会儿就崩溃了，报错如下：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::cout &lt;&lt; <span class="hljs-string">&quot;src: (&quot;</span> &lt;&lt; h &lt;&lt; <span class="hljs-string">&quot;, &quot;</span> &lt;&lt; w &lt;&lt; <span class="hljs-string">&quot;)&quot;</span> &lt;&lt; std::endl;<br></code></pre></td></tr></table></figure>
+
 <p>仅仅是简单的c++输出流，对功能本来没有影响。很好奇为什么会崩溃，查了好久一无所获。既然不影响功能就先删掉了这行代码，果然就不报错了，功能都能正常使用了，开开心心的交给测试回归。一切都是好好的，直到跑在arm64-v8a的设备上，出现了如下报错：</p>
 <p><img src="/img/c++_2.png" srcset="/img/loading.gif" lazyload></p>
 <p>这次有明显的报错信息，意思是当运行opencv_java3.so的时候缺少_sfp_handler_exception函数，这个函数实际上是在c++_shared.so库中的。奇怪的是原生代码运行在arm64-v8a的设备上是好的，那怎么跑在react-native环境就会缺少_sfp_handler_exception函数了呢？</p>
@@ -305,12 +302,18 @@
 <li>进入工程</li>
 </ol>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">cd</span> Temple<br></code></pre></td></tr></table></figure>
+
 <ol start="2">
 <li>指定版本</li>
 </ol>
 <figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">npm</span> install --save react-native@<span class="hljs-number">0</span>.<span class="hljs-number">58</span>.<span class="hljs-number">6</span><br></code></pre></td></tr></table></figure>
+
 <ol start="3">
-<li>更新<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs actionscript">react-<span class="hljs-keyword">native</span> upgrade<br></code></pre></td></tr></table></figure></li>
+<li>更新</li>
+</ol>
+<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs actionscript">react-<span class="hljs-keyword">native</span> upgrade<br></code></pre></td></tr></table></figure>
+
+<ol start="4">
 <li>一路替换文件</li>
 </ol>
 <p><img src="/img/c++_8.png" srcset="/img/loading.gif" lazyload></p>
