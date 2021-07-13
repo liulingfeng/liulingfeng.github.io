@@ -185,7 +185,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.5k 字
+      1.6k 字
     </span>
   
 
@@ -195,7 +195,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      18
+      19
        分钟
     </span>
   
@@ -342,6 +342,13 @@
 <li>MainActivity.onCreate() 调用 stringFromJNI()，后者会返回“Hello from C++”，并使用它更新 TextView 文本</li>
 </ol>
 <p><img src="/img/ndk_4.jpeg" srcset="/img/loading.gif" lazyload alt="运行结果"></p>
+<h3 id="NDK-断点调试"><a href="#NDK-断点调试" class="headerlink" title="NDK 断点调试"></a>NDK 断点调试</h3><p>NDK 断点调试和 Java 类似，打断点之后 Debug。只是 NDK 断点调试会另启一个 LLDB 的服务，这个服务依赖于 Host 的配置，否则会报如下错误：</p>
+<p><img src="/img/ndk_5.png" srcset="/img/loading.gif" lazyload alt="没有配置host"></p>
+<p>配置 host 可以借助于 SwitchHosts，然后在 SwitchHosts 添加如下 host</p>
+<figure class="highlight accesslog"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs accesslog"><span class="hljs-number">127.0.0.1</span> localhost<br></code></pre></td></tr></table></figure>
+
+<p>华为手机 NDK 断点调试还会出现如下问题，目前还没找到解决方法。找到解决方法的读者可以在下方留言哈</p>
+<p><img src="/img/ndk_6.png" srcset="/img/loading.gif" lazyload alt="华为手机异常"></p>
 
             </div>
             <hr>
