@@ -185,7 +185,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.2k 字
+      1.3k 字
     </span>
   
 
@@ -240,17 +240,19 @@
 <li>so 动态库之前相互关联的语法</li>
 </ul>
 <h4 id="使用-作为注释开头"><a href="#使用-作为注释开头" class="headerlink" title="使用 # 作为注释开头"></a>使用 # 作为注释开头</h4><h4 id="CMake-指令大小写不敏感，参数和变量大小写敏感"><a href="#CMake-指令大小写不敏感，参数和变量大小写敏感" class="headerlink" title="CMake 指令大小写不敏感，参数和变量大小写敏感"></a>CMake 指令大小写不敏感，参数和变量大小写敏感</h4><p>Android 中推荐使用小写</p>
-<h4 id="变量使用-方式取值，但是在-if-控制语句中直接使用变量名"><a href="#变量使用-方式取值，但是在-if-控制语句中直接使用变量名" class="headerlink" title="变量使用 ${} 方式取值，但是在 if 控制语句中直接使用变量名"></a>变量使用 ${} 方式取值，但是在 if 控制语句中直接使用变量名</h4><h4 id="set-指令"><a href="#set-指令" class="headerlink" title="set 指令"></a>set 指令</h4><p>语法：set(VAR [VALUE])</p>
+<h4 id="变量使用-方式取值，但是在-if-控制语句中直接使用变量名"><a href="#变量使用-方式取值，但是在-if-控制语句中直接使用变量名" class="headerlink" title="变量使用 ${} 方式取值，但是在 if 控制语句中直接使用变量名"></a>变量使用 ${} 方式取值，但是在 if 控制语句中直接使用变量名</h4><h4 id="逻辑操作，跟-python-有些类似"><a href="#逻辑操作，跟-python-有些类似" class="headerlink" title="逻辑操作，跟 python 有些类似"></a>逻辑操作，跟 python 有些类似</h4><figure class="highlight isbl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs isbl"><span class="hljs-function"><span class="hljs-title">if</span>(<span class="hljs-variable"><span class="hljs-literal">true</span></span>)</span><br>    <span class="hljs-function"><span class="hljs-title">message</span>(<span class="hljs-string">&quot;this is true&quot;</span>)</span><br><span class="hljs-function"><span class="hljs-title">else</span>()</span><br>    <span class="hljs-function"><span class="hljs-title">message</span>(<span class="hljs-string">&quot;this is false&quot;</span>)</span><br></code></pre></td></tr></table></figure>
+
+<p><font color=#FF8C00>可以用于根据不同平台去编译不同平台的 so 库</font></p>
+<h4 id="set-指令"><a href="#set-指令" class="headerlink" title="set 指令"></a>set 指令</h4><p>语法：set(VAR [VALUE])</p>
 <p>显示定义变量，例如：</p>
 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-comment">// 定义一个叫 name 的变量</span><br><span class="hljs-function"><span class="hljs-title">set</span><span class="hljs-params">(name 刘小帅)</span></span><br></code></pre></td></tr></table></figure>
 
 <h4 id="message-指令"><a href="#message-指令" class="headerlink" title="message 指令"></a>message 指令</h4><p>向终端打印日志：编译过程打印日志；例如：</p>
 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-comment">// 打印定义的 name 变量</span><br><span class="hljs-function"><span class="hljs-title">message</span><span class="hljs-params">($&#123;name&#125;)</span></span><br></code></pre></td></tr></table></figure>
 
-<h4 id="逻辑操作，跟-python-有些类似"><a href="#逻辑操作，跟-python-有些类似" class="headerlink" title="逻辑操作，跟 python 有些类似"></a>逻辑操作，跟 python 有些类似</h4><figure class="highlight isbl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs isbl"><span class="hljs-function"><span class="hljs-title">if</span>(<span class="hljs-variable"><span class="hljs-literal">true</span></span>)</span><br>    <span class="hljs-function"><span class="hljs-title">message</span>(<span class="hljs-string">&quot;this is true&quot;</span>)</span><br><span class="hljs-function"><span class="hljs-title">else</span>()</span><br>    <span class="hljs-function"><span class="hljs-title">message</span>(<span class="hljs-string">&quot;this is false&quot;</span>)</span><br></code></pre></td></tr></table></figure>
+<h4 id="cmake-minimum-required-指令"><a href="#cmake-minimum-required-指令" class="headerlink" title="cmake_minimum_required 指令"></a>cmake_minimum_required 指令</h4><p>规定 CMake 最低版本，例如：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">cmake_minimum_required</span>(VERSION <span class="hljs-number">3</span>.<span class="hljs-number">4</span>.<span class="hljs-number">1</span>)<br></code></pre></td></tr></table></figure>
 
-<p>可以用于根据不同平台去编译不同平台的 so 库</p>
-<h4 id="cmake-minimum-required-VERSION-xxx"><a href="#cmake-minimum-required-VERSION-xxx" class="headerlink" title="cmake_minimum_required(VERSION xxx)"></a>cmake_minimum_required(VERSION xxx)</h4><p>规定 CMake 最低版本</p>
 <h4 id="project-指令"><a href="#project-指令" class="headerlink" title="project 指令"></a>project 指令</h4><p>定义 CMake 工程名称，例如：</p>
 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-function"><span class="hljs-title">project</span><span class="hljs-params">(<span class="hljs-string">&quot;testndk&quot;</span>)</span></span><br></code></pre></td></tr></table></figure>
 
@@ -259,12 +261,11 @@
 <figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-comment">//将 people 文件夹下的头文件添加到搜索路径</span><br><span class="hljs-keyword">include</span><span class="hljs-constructor">_directories(<span class="hljs-params">people</span><span class="hljs-operator">/</span>)</span> <br></code></pre></td></tr></table></figure>
 
 <h4 id="add-library-指令"><a href="#add-library-指令" class="headerlink" title="add_library 指令"></a>add_library 指令</h4><p>语法：add_library(name [SHARED | STATIC | MODULE] [EXCLUDE_FROM_ALL] [source])</p>
-<p>将一组 cpp 源文件编译出一个库文件，并保存为 libname.so (lib 前缀是生成文件时 CMake自动添加上去的)。其中有三种库文件类型，不写的话，默认为 STATIC</p>
+<p>将一组 cpp 源文件编译出一个库文件，并保存为 libname.so (lib 前缀是生成文件时 CMake 自动添加上去的)。其中有三种库文件类型，不写的话，默认为 STATIC</p>
 <ul>
 <li>SHARED: 表示动态库，可以在(Java)代码中使用 System.loadLibrary(name) 动态调用</li>
 <li>STATIC: 表示静态库，集成到代码中会在编译时调用</li>
 <li>MODULE: 只有在使用 dyId 的系统有效，如果不支持 dyId，则被当作 SHARED 对待</li>
-<li>EXCLUDE_FROM_ALL: 表示这个库不被默认构建，除非其他组件依赖或手工构建</li>
 </ul>
 <p>add_library 命令也可以用来导入第三方的库:<br>add_library(libname [SHARED | STATIC | MODULE | UNKNOWN] IMPORTED)<br>例如，导入 opencv.so</p>
 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-function"><span class="hljs-title">add_library</span><span class="hljs-params">(opencv SHARED IMPORTED)</span></span><br></code></pre></td></tr></table></figure>
@@ -285,7 +286,7 @@
 <li>CMAKE_CURRENT_LIST_DIR 当前 CMake 文件夹的路径</li>
 <li>ANDROID_ABI 当前在打的 so 对应的 cpu 架构</li>
 </ul>
-<p>这些路径对于引用其他的库非常有用</p>
+<p><font color=#FF8C00>这些路径对于引用其他的库非常有用</font></p>
 <h3 id="动态库的来源"><a href="#动态库的来源" class="headerlink" title="动态库的来源"></a>动态库的来源</h3><p>动态库的来源总共就三类：</p>
 <ol>
 <li>基于 cpp 源文件打的动态库</li>
@@ -302,7 +303,7 @@
 </ol>
 <figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs awk">add_library(opencv SHARED IMPORTED)<br><span class="hljs-regexp">//</span> add_library 必须在前<br>set_target_properties(opencv<br>        PROPERTIES IMPORTED_LOCATION<br>        <span class="hljs-variable">$&#123;CMAKE_CURRENT_SOURCE_DIR&#125;</span><span class="hljs-regexp">/../</span>jniLibs<span class="hljs-regexp">/$&#123;ANDROID_ABI&#125;/</span>libopencv_java3.so)<br></code></pre></td></tr></table></figure>
 
-<h3 id="理解事例工程"><a href="#理解事例工程" class="headerlink" title="理解事例工程"></a>理解事例工程</h3><p>现在我们再来看下之前事例工程创建的 CMakeLists.txt 的内容就会更加清晰</p>
+<h3 id="理解示例工程"><a href="#理解示例工程" class="headerlink" title="理解示例工程"></a>理解示例工程</h3><p>现在我们再来看下之前示例工程创建的 CMakeLists.txt 的内容就会更加清晰</p>
 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs stylus"><span class="hljs-function"><span class="hljs-title">cmake_minimum_required</span><span class="hljs-params">(VERSION <span class="hljs-number">3.10</span>.<span class="hljs-number">2</span>)</span></span><br><span class="hljs-function"><span class="hljs-title">project</span><span class="hljs-params">(<span class="hljs-string">&quot;testndk&quot;</span>)</span></span><br><br>add_library( <br>             native-lib<br>             SHARED<br>             native-lib<span class="hljs-selector-class">.cpp</span> )<br><br>find_library(<br>              log-lib<br>              log )<br><br>target_link_libraries( <br>                       native-lib<br>                       $&#123;log-lib&#125; )<br></code></pre></td></tr></table></figure>
 
 <ol>
@@ -310,11 +311,12 @@
 <li>将当前 CMake 工程命名为 testndk</li>
 <li>将 native-lib.cpp 文件打成动态库 libnative-lib.so</li>
 <li>查找本地 log 库，并重命名为 log-lib</li>
-<li>将 native-lib 和 log-lib 两个动态库关联，以便在 native-lib.cpp 内部使用 log库 的函数</li>
+<li>将 native-lib 和 log-lib 两个动态库关联，以便在 native-lib.cpp 内部使用 log 库的函数</li>
 </ol>
-<h3 id="CMake-构建产物"><a href="#CMake-构建产物" class="headerlink" title="CMake 构建产物"></a>CMake 构建产物</h3><p>CMake 构建的产物在 build/intermediates 文件夹下</p>
+<h3 id="CMake-构建产物"><a href="#CMake-构建产物" class="headerlink" title="CMake 构建产物"></a>CMake 构建产物</h3><p>CMake 构建的产物在 build/intermediates 文件夹下，默认构建所有 cpu 架构的产物</p>
 <p><img src="/img/ndk_7.png" srcset="/img/loading.gif" lazyload alt="构建产物"></p>
-
+<p>可以在 android 域的 defaultConfig 下指定需要构建的 cpu 架构</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs dts"><span class="hljs-comment">// 指定只打 v7a 和 v8a 的 so</span><br><span class="hljs-class">android </span>&#123;<br>  <span class="hljs-class">defaultConfig </span>&#123;<br>	  <span class="hljs-class">externalNativeBuild </span>&#123; <br>		  <span class="hljs-class">ndk </span>&#123;<br>		     abiFilters <span class="hljs-string">&quot;armeabi-v7a&quot;</span>, <span class="hljs-string">&quot;arm64-v8a&quot;</span><br>		  &#125;<br>	  &#125;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
             </div>
             <hr>
             <div>
