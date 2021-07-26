@@ -18,7 +18,7 @@
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
   
-  <title>跟我一起学NDK-C++必知必会1 - 刘小帅的技术分享</title>
+  <title>跟我一起学NDK-C++必知必会part1 - 刘小帅的技术分享</title>
 
   <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
 
@@ -163,7 +163,7 @@
       <div class="full-bg-img">
         <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
           <div class="page-header text-center fade-in-up">
-            <span class="h2" id="subtitle" title="跟我一起学NDK-C++必知必会1">
+            <span class="h2" id="subtitle" title="跟我一起学NDK-C++必知必会part1">
               
             </span>
 
@@ -225,19 +225,25 @@
         <div class="py-5" id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">跟我一起学NDK-C++必知必会1</h1>
+            <h1 style="display: none">跟我一起学NDK-C++必知必会part1</h1>
             
             <div class="markdown-body">
               <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>NDk 采用 C/C++ 语言进行开发，所以学习 NDK 开发之前我们先来补充下必要的 C/C++ 知识。C++ 是对 C 语言的升级，C++ 程序设计语言可以归结为 C 程序设计语言的语法 + 面向对象程序设计，因此本课程只介绍 C++ 程序设计语言。相信熟悉 Android 应用层开发的同学对于 Java 语言能够得心应手，本课程对于 C++ 程序设计语言的不少知识会用 Java 类推。</p>
-<h3 id="预处理指令"><a href="#预处理指令" class="headerlink" title="预处理指令"></a>预处理指令</h3><p>C++ 程序在开始进行编译前会先进行一项预处理操作，将程序中那些以 # 符号开头的预处理指令进行特别的处理。预处理指令不会翻译为机器码，只在编译之前起作用。因为预处理指令不是 C++ 语句，所以并不需要以分号 “,” 结束。</p>
+<h3 id="预处理指令"><a href="#预处理指令" class="headerlink" title="预处理指令"></a>预处理指令</h3><p>C++ 程序在开始进行编译前会先进行一项预处理操作，将程序中那些以 # 符号开头的预处理指令进行特别的处理。预处理指令不会翻译为机器码，只在编译之前起作用。因为预处理指令不是 C++ 语句，所以并不需要以分号 “;” 结束。</p>
 <ul>
 <li>#include 指令</li>
 </ul>
 <p>#include 指令可以将指定的头文件包含到源文件中(类似于 Java 的 import)，有两种指定方式。</p>
 <ol>
 <li>#include &lt;文件名&gt;<br>编译程序将到默认的系统目录中查找指定的文件，一般为系统文件</li>
+</ol>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cmath&gt;</span></span><br></code></pre></td></tr></table></figure>
+
+<ol start="2">
 <li>#inclide “”<br>编译程序将到当前程序文件的工作目录中查找指定的文件，一般为自定义文件</li>
 </ol>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&quot;people/&quot;</span></span><br></code></pre></td></tr></table></figure>
+
 <ul>
 <li>#define 宏定义指令<br>#define 是一种替换指令，可以用来定义宏名称，并且替换程序中的数值、字符串、程序语句或者函数。</li>
 </ul>
@@ -298,7 +304,7 @@
 <figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">namespace_name::code<br></code></pre></td></tr></table></figure>
 
 <p>您可以使用 using namespace 指令，这样在使用命名空间时就可以不用在前面加上命名空间的名称。这个指令会告诉编译器，后续的代码将使用指定的命名空间中的名称。</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> <span class="hljs-keyword">namespace</span>_name<br></code></pre></td></tr></table></figure>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> <span class="hljs-keyword">namespace</span>_name;<br></code></pre></td></tr></table></figure>
 
 <h3 id="基准语法"><a href="#基准语法" class="headerlink" title="基准语法"></a>基准语法</h3><ul>
 <li>注释，和 Java 一致</li>
