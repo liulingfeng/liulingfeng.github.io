@@ -1,0 +1,841 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="NDk 采用 C/C++ 语言进行开发，所以学习 NDK 开发之前我们先来补充下必要的 C/C++ 知识。C++ 是对 C 语言的升级，C++ 程序设计语言可以归结为 C 程序设计语言的语法 + 面向对象程序设计，因此本课程只介绍 C++ 程序设计语言">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+  <title>跟我一起学NDK-C++必知必会1 - 刘小帅的技术分享</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":"564e6ca46bdc856d4e49ae6cbe3ff163","google":"G-1L1YKBGF7J","gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>刘小帅的博客</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/banner_3.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="跟我一起学NDK-C++必知必会1">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-07-26 14:45" pubdate>
+        2021年7月26日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.9k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      22
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">跟我一起学NDK-C++必知必会1</h1>
+            
+            <div class="markdown-body">
+              <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>NDk 采用 C/C++ 语言进行开发，所以学习 NDK 开发之前我们先来补充下必要的 C/C++ 知识。C++ 是对 C 语言的升级，C++ 程序设计语言可以归结为 C 程序设计语言的语法 + 面向对象程序设计，因此本课程只介绍 C++ 程序设计语言。相信熟悉 Android 应用层开发的同学对于 Java 语言能够得心应手，本课程对于 C++ 程序设计语言的不少知识会用 Java 类推。</p>
+<h3 id="预处理指令"><a href="#预处理指令" class="headerlink" title="预处理指令"></a>预处理指令</h3><p>C++ 程序在开始进行编译前会先进行一项预处理操作，将程序中那些以 # 符号开头的预处理指令进行特别的处理。预处理指令不会翻译为机器码，只在编译之前起作用。因为预处理指令不是 C++ 语句，所以并不需要以分号 “,” 结束。</p>
+<ul>
+<li>#include 指令</li>
+</ul>
+<p>#include 指令可以将指定的头文件包含到源文件中(类似于 Java 的 import)，有两种指定方式。</p>
+<ol>
+<li>#include &lt;文件名&gt;<br>编译程序将到默认的系统目录中查找指定的文件，一般为系统文件</li>
+<li>#inclide “”<br>编译程序将到当前程序文件的工作目录中查找指定的文件，一般为自定义文件</li>
+</ol>
+<ul>
+<li>#define 宏定义指令<br>#define 是一种替换指令，可以用来定义宏名称，并且替换程序中的数值、字符串、程序语句或者函数。</li>
+</ul>
+<p>语法如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 常数值</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 <span class="hljs-meta-string">&quot;字符串&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 程序语句</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 函数名称</span><br></code></pre></td></tr></table></figure>
+
+<p>宏函数是一种可以传递参数来替换简单函数功能的宏。参数不需要指定类型。</p>
+<p>语法如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏函数名称(参数) 函数表达式</span><br></code></pre></td></tr></table></figure>
+
+<p>如果想要取消#define所声明的宏时，只要使用下面的语法声明即可。取消之后不可以再使用。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">undef</span> 宏名称</span><br></code></pre></td></tr></table></figure>
+
+<p>标准预处理宏</p>
+<table>
+<thead>
+<tr>
+<th>宏名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LINE</strong></td>
+<td>正在编译的行在源文件的行号</td>
+</tr>
+<tr>
+<td><strong>FILE</strong></td>
+<td>被编译的源文件的文件名</td>
+</tr>
+<tr>
+<td><strong>DATE</strong></td>
+<td>存储编译开始的日期</td>
+</tr>
+<tr>
+<td><strong>TIME</strong></td>
+<td>存储编译开始的时间</td>
+</tr>
+</tbody></table>
+<ul>
+<li>条件编译指令</li>
+</ul>
+<p>有几个指令可以用来有选择地对部分程序源代码进行编译，这个过程被称为条件编译。条件预处理器的结构与 if 选择结构很像。共有六种：#if、#else、#elif、#endif、#ifdef、#ifndef</p>
+<p>#if 指令类似于 if 条件语句，#else 指令类似于 else 条件语句，#elif 类似于 else if 条件语句，#endif 条件编译结束标识。</p>
+<p>语法如下：</p>
+<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs vala"><span class="hljs-meta">#if 条件语句</span><br>	程序块<span class="hljs-number">1</span><br><span class="hljs-meta">#elif 条件语句</span><br>	程序块<span class="hljs-number">2</span><br><span class="hljs-meta">#else</span><br>	程序块<span class="hljs-number">3</span><br><span class="hljs-meta">#endif</span><br></code></pre></td></tr></table></figure>
+
+<p>#ifdef 定义了某宏定义标识符，#ifndef 没有定义某宏定义标识符。</p>
+<p>语法如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> 宏名称</span><br>	程序块<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">ifndef</span> 宏名称</span><br>	程序块<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
+
+<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h3><p>因为 C++ 中不存在 Java 中包的概念，对于不用库相同名称的函数、变量等无法区分，所以引入了命名空间的概念。</p>
+<p>语法如下：</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-keyword">namespace</span> <span class="hljs-symbol">namespace_name</span>&#123;<br>	<span class="hljs-comment">// 程序块</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>为了调用命名空间的函数或变量，需要在前面加上命名空间的名称</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">namespace_name::code<br></code></pre></td></tr></table></figure>
+
+<p>您可以使用 using namespace 指令，这样在使用命名空间时就可以不用在前面加上命名空间的名称。这个指令会告诉编译器，后续的代码将使用指定的命名空间中的名称。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> <span class="hljs-keyword">namespace</span>_name<br></code></pre></td></tr></table></figure>
+
+<h3 id="基准语法"><a href="#基准语法" class="headerlink" title="基准语法"></a>基准语法</h3><ul>
+<li>注释，和 Java 一致</li>
+</ul>
+<p>单行</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk"><span class="hljs-regexp">//</span>  我是单行注释<br></code></pre></td></tr></table></figure>
+
+<p>多行</p>
+<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs actionscript"><span class="hljs-comment">/**</span><br><span class="hljs-comment">* 我是多行注释</span><br><span class="hljs-comment">*/</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>语句之间用 ; 分隔，和 Java 一致</p>
+</li>
+<li><p>代码块包含在 {} 内，和 Java 一致</p>
+</li>
+</ul>
+<h3 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h3><h4 id="基本数据类型"><a href="#基本数据类型" class="headerlink" title="基本数据类型"></a>基本数据类型</h4><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>关键字</th>
+<th>大小</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>布尔型</td>
+<td>bool</td>
+<td>1个字节</td>
+</tr>
+<tr>
+<td>字符型</td>
+<td>char</td>
+<td>1个字节</td>
+</tr>
+<tr>
+<td>整型</td>
+<td>int</td>
+<td>4个字节</td>
+</tr>
+<tr>
+<td>浮点型</td>
+<td>float</td>
+<td>4个字节</td>
+</tr>
+<tr>
+<td>双浮点型</td>
+<td>double</td>
+<td>8个字节</td>
+</tr>
+<tr>
+<td>无类型</td>
+<td>void</td>
+<td>/</td>
+</tr>
+<tr>
+<td>宽字符型</td>
+<td>wchar_t</td>
+<td>2字节</td>
+</tr>
+</tbody></table>
+<p>sizeof() 函数可以获取数据类型的长度</p>
+<h4 id="类型修饰符"><a href="#类型修饰符" class="headerlink" title="类型修饰符"></a>类型修饰符</h4><p>一些基本类型可以使用一个或多个类型修饰符进行修饰，修饰符修饰会改变所占内存大小</p>
+<ul>
+<li>signed</li>
+<li>unsigned</li>
+<li>short</li>
+<li>long</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>大小</th>
+<th>范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>unsigned char</td>
+<td>1个字节</td>
+<td>0 到 255</td>
+</tr>
+<tr>
+<td>signed char</td>
+<td>1个字节</td>
+<td>-128 到 127</td>
+</tr>
+<tr>
+<td>unsigned int</td>
+<td>4个字节</td>
+<td>0 到 4294967295</td>
+</tr>
+<tr>
+<td>signed int</td>
+<td>4个字节</td>
+<td>-2147483648 到 2147483647</td>
+</tr>
+<tr>
+<td>short int</td>
+<td>2个字节</td>
+<td>-32768 到 32767</td>
+</tr>
+<tr>
+<td>long int</td>
+<td>8个字节</td>
+<td>-9,223,372,036,854,775,808 到 9,223,372,036,854,775,807</td>
+</tr>
+<tr>
+<td>long double</td>
+<td>16个字节</td>
+<td>+/- 1.7e +/- 308 (~15 个数字)</td>
+</tr>
+</tbody></table>
+<h4 id="定义新类型"><a href="#定义新类型" class="headerlink" title="定义新类型"></a>定义新类型</h4><p>关键字：typedef</p>
+<p>语法：typedef type newname;</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs abnf">typedef int feet<span class="hljs-comment">;</span><br>feet age<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
+
+<p>其实 wchar_t 类型是这样来的</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">short</span> <span class="hljs-keyword">int</span> <span class="hljs-keyword">wchar_t</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h3><p>语法：数据类型 变量名1，变量名2;</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-built_in">int</span> age; <span class="hljs-comment">// 只定义</span><br><span class="hljs-built_in">int</span> diatance = <span class="hljs-number">1200</span>; <span class="hljs-comment">// 定义并赋值</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h3><p>语法：const 数据类型 常量名 = 常量值;</p>
+<p>常量名一般用大写，运行时无法改变其数值。<font color=#FF8C00>如果申明时并未设置初始值，那么之后无法再设置数值</font></p>
+<figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs processing"><span class="hljs-keyword">const</span> <span class="hljs-built_in">float</span> <span class="hljs-literal">PI</span> = <span class="hljs-number">3.1415</span>;<br></code></pre></td></tr></table></figure>
+
+<p>也可以使用宏定义的方式</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> PI 3.1415</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="运算"><a href="#运算" class="headerlink" title="运算"></a>运算</h3><p>包括赋值运算、算术运算、比较运算、逻辑运算、递增递减运算以及位运算，这些运算都和 Java 一致。</p>
+<h3 id="数据类型转换"><a href="#数据类型转换" class="headerlink" title="数据类型转换"></a>数据类型转换</h3><h4 id="自动转换"><a href="#自动转换" class="headerlink" title="自动转换"></a>自动转换</h4><p>数值范围大的作为优先转换的对象，转换顺序如下：</p>
+<blockquote>
+<p>double &gt; float &gt; unsigned long &gt;  long &gt; unsigned int &gt; int</p>
+</blockquote>
+<h4 id="强制转换"><a href="#强制转换" class="headerlink" title="强制转换"></a>强制转换</h4><p>语法：(强制转换类型名称) 表达式或变量;</p>
+<figure class="highlight axapta"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs axapta"><span class="hljs-built_in">int</span> a, b, <span class="hljs-keyword">avg</span>;<br><span class="hljs-keyword">avg</span> = (float)(a + b) / <span class="hljs-number">2</span>;<span class="hljs-comment">//将 a+b 的值转换为浮点数再除以 2</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="转型运算符"><a href="#转型运算符" class="headerlink" title="转型运算符"></a>转型运算符</h4><table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>static_cast</td>
+<td>转换数据类型</td>
+</tr>
+<tr>
+<td>const_cast</td>
+<td>转换指针或引用的常数类型</td>
+</tr>
+<tr>
+<td>dynamic_cast</td>
+<td>转换类继承体系中的对象指针或引用</td>
+</tr>
+<tr>
+<td>reinterpret_cast</td>
+<td>转换无关联的数据类型</td>
+</tr>
+</tbody></table>
+<p>如下，用 static_cast 将变量 two 从 double 类型转换为 int 类型</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">int</span> one = <span class="hljs-number">9</span>;<br><span class="hljs-keyword">double</span> two = <span class="hljs-number">7.6</span>;<br>one = one + <span class="hljs-keyword">static_cast</span>&lt;<span class="hljs-keyword">int</span>&gt;(two);<br></code></pre></td></tr></table></figure>
+
+<h3 id="流程控制结构"><a href="#流程控制结构" class="headerlink" title="流程控制结构"></a>流程控制结构</h3><p>包括顺序结构、选择结构(if else)、循环结构(for、while/do while)，都和 Java 一致。</p>
+<h3 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h3><h4 id="数组定义"><a href="#数组定义" class="headerlink" title="数组定义"></a>数组定义</h4><p>语法：数据类型 数组名[数组大小]; 或 数据类型 数组名[数组大小] = {值1,值2,…};</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">int</span> scores[<span class="hljs-number">3</span>] = &#123;<span class="hljs-number">69</span>, <span class="hljs-number">71</span>, <span class="hljs-number">88</span>&#125;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="数组赋值取值"><a href="#数组赋值取值" class="headerlink" title="数组赋值取值"></a>数组赋值取值</h4><p>语法：数组名[下标] = 值;</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">scores</span>[<span class="hljs-number">0</span>] = <span class="hljs-number">89</span>;<br></code></pre></td></tr></table></figure>
+
+<h3 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h3><h4 id="数组形式"><a href="#数组形式" class="headerlink" title="数组形式"></a>数组形式</h4><p>语法：char 字符串变量[] = “初始字符串”;</p>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs pgsql"><span class="hljs-type">char</span> <span class="hljs-type">name</span>[] = &quot;Jone&quot;;<br></code></pre></td></tr></table></figure>
+
+<h4 id="String-类"><a href="#String-类" class="headerlink" title="String 类"></a>String 类</h4><p>语法：string 字符串变量 = “初始字符串”;</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span><span class="hljs-meta-string">&lt;string&gt;</span> <span class="hljs-comment">//包含字符串头文件</span></span><br>string name = <span class="hljs-string">&quot;Jone&quot;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>String 类成员函数:</p>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>功能</th>
+<th>用法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>append()</td>
+<td>串接字符串</td>
+<td>str.append(str2)</td>
+</tr>
+<tr>
+<td>assign()</td>
+<td>字符串赋值</td>
+<td>str.assign(str2)</td>
+</tr>
+<tr>
+<td>compare()</td>
+<td>比较两个字符串</td>
+<td>str.compare(str2)</td>
+</tr>
+<tr>
+<td>replace()</td>
+<td>替换字符串</td>
+<td>str.replace(开始位置,长度,str2)</td>
+</tr>
+<tr>
+<td>insert()</td>
+<td>插入字符串</td>
+<td>str.insert(开始位置,str2)</td>
+</tr>
+<tr>
+<td>erase()</td>
+<td>清除字符串的部分内容</td>
+<td>str.erase(开始位置,清除字符数)</td>
+</tr>
+<tr>
+<td>length()</td>
+<td>获取字符串的长度</td>
+<td>str.length();</td>
+</tr>
+<tr>
+<td>size()</td>
+<td>获取字符串大小</td>
+<td>str.size();</td>
+</tr>
+<tr>
+<td>find()</td>
+<td>寻找字符串</td>
+<td>str.find(str2);</td>
+</tr>
+<tr>
+<td>substr()</td>
+<td>获取字符串的部分子串</td>
+<td>str.substr(开始位置,长度);</td>
+</tr>
+<tr>
+<td>empty()</td>
+<td>判断是否为空字符串</td>
+<td>str.empty();</td>
+</tr>
+<tr>
+<td>at()</td>
+<td>获取指定位置字符</td>
+<td>str.at(n);//n为第n个字符</td>
+</tr>
+</tbody></table>
+<h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><p>语法：</p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs abnf">返回数据类型 函数名(参数)&#123;<br>	程序语句块<span class="hljs-comment">;</span><br>	return 返回值<span class="hljs-comment">;</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>如：</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-keyword">int</span> a, <span class="hljs-keyword">int</span> b)</span></span>&#123;<br>	<span class="hljs-keyword">return</span> a + b;<br>&#125;<br></code></pre></td></tr></table></figure>
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/NDK%E5%BC%80%E5%8F%91/">NDK开发</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/NDK%E5%BC%80%E5%8F%91/">NDK开发</a>
+                    
+                      <a class="hover-with-bg" href="/tags/C/">C++</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/07/13/%E8%B7%9F%E6%88%91%E4%B8%80%E8%B5%B7%E5%AD%A6NDK-CMake%E5%BF%85%E7%9F%A5%E5%BF%85%E4%BC%9A/">
+                        <span class="hidden-mobile">跟我一起学NDK-CMake必知必会</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"URbh2NVSvj6oGrg2v5ToH7Ap-gzGzoHsz","appKey":"xYISLvS5bVhfmHCz0aJ57LiM","placeholder":"说点什么","path":"window.location.pathname","avatar":"retro","meta":["nick","mail","link"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"requiredFields":[]},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+      typing(title)
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      var _hmt = _hmt || [];
+      (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?564e6ca46bdc856d4e49ae6cbe3ff163";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
+    </script>
+  
+
+  
+    <!-- Google Analytics -->
+    <script defer>
+      window.ga = window.ga || function () { (ga.q = ga.q || []).push(arguments) };
+      ga.l = +new Date;
+      ga('create', 'G-1L1YKBGF7J', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <script async src='https://www.google-analytics.com/analytics.js'></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>
