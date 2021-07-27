@@ -288,7 +288,7 @@
 <td>2字节</td>
 </tr>
 </tbody></table>
-<p>sizeof() 函数可以获取数据类型的长度</p>
+<p>sizeof() 函数可以获取数据类型的所占字节数</p>
 <h4 id="类型修饰符"><a href="#类型修饰符" class="headerlink" title="类型修饰符"></a>类型修饰符</h4><p>一些基本类型可以使用一个或多个类型修饰符进行修饰，修饰符修饰会改变所占内存大小</p>
 <ul>
 <li>signed</li>
@@ -354,7 +354,7 @@
 <p>常量名一般用大写，运行时无法改变其数值。<font color=#FF8C00>如果申明时并未设置初始值，那么之后无法再设置数值</font></p>
 <figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs processing"><span class="hljs-keyword">const</span> <span class="hljs-built_in">float</span> <span class="hljs-literal">PI</span> = <span class="hljs-number">3.1415</span>;<br></code></pre></td></tr></table></figure>
 
-<p>也可以使用宏定义的方式</p>
+<p>也可以使用<a href="#%E9%A2%84%E5%A4%84%E7%90%86%E6%8C%87%E4%BB%A4" title="标题">宏定义</a>的方式</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> PI 3.1415</span><br></code></pre></td></tr></table></figure>
 
 <h3 id="运算"><a href="#运算" class="headerlink" title="运算"></a>运算</h3><p>包括赋值运算、算术运算、比较运算、逻辑运算、递增递减运算以及位运算，这些运算都和 Java 一致。</p>
