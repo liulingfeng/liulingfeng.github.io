@@ -185,7 +185,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.9k 字
+      2.3k 字
     </span>
   
 
@@ -195,7 +195,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      22
+      27
        分钟
     </span>
   
@@ -229,83 +229,6 @@
             
             <div class="markdown-body">
               <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>NDk 采用 C/C++ 语言进行开发，所以学习 NDK 开发之前我们先来补充下必要的 C/C++ 知识。C++ 是对 C 语言的升级，C++ 程序设计语言可以归结为 C 程序设计语言的语法 + 面向对象程序设计，因此本课程只介绍 C++ 程序设计语言。相信熟悉 Android 应用层开发的同学对于 Java 语言能够得心应手，本课程对于 C++ 程序设计语言的不少知识会用 Java 类推。</p>
-<h3 id="预处理指令"><a href="#预处理指令" class="headerlink" title="预处理指令"></a>预处理指令</h3><p>C++ 程序在开始进行编译前会先进行一项预处理操作，将程序中那些以 # 符号开头的预处理指令进行特别的处理。预处理指令不会翻译为机器码，只在编译之前起作用。因为预处理指令不是 C++ 语句，所以并不需要以分号 “;” 结束。</p>
-<ul>
-<li>#include 指令</li>
-</ul>
-<p>#include 指令可以将指定的头文件包含到源文件中(类似于 Java 的 import)，有两种指定方式。</p>
-<ol>
-<li>#include &lt;文件名&gt;<br>编译程序将到默认的系统目录中查找指定的文件，一般为系统文件</li>
-</ol>
-<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cmath&gt;</span></span><br></code></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>#inclide “”<br>编译程序将到当前程序文件的工作目录中查找指定的文件，一般为自定义文件</li>
-</ol>
-<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&quot;people/&quot;</span></span><br></code></pre></td></tr></table></figure>
-
-<ul>
-<li>#define 宏定义指令<br>#define 是一种替换指令，可以用来定义宏名称，并且替换程序中的数值、字符串、程序语句或者函数。</li>
-</ul>
-<p>语法如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 常数值</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 <span class="hljs-meta-string">&quot;字符串&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 程序语句</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 函数名称</span><br></code></pre></td></tr></table></figure>
-
-<p>宏函数是一种可以传递参数来替换简单函数功能的宏。参数不需要指定类型。</p>
-<p>语法如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏函数名称(参数) 函数表达式</span><br></code></pre></td></tr></table></figure>
-
-<p>如果想要取消#define所声明的宏时，只要使用下面的语法声明即可。取消之后不可以再使用。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">undef</span> 宏名称</span><br></code></pre></td></tr></table></figure>
-
-<p>标准预处理宏</p>
-<table>
-<thead>
-<tr>
-<th>宏名称</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>LINE</strong></td>
-<td>正在编译的行在源文件的行号</td>
-</tr>
-<tr>
-<td><strong>FILE</strong></td>
-<td>被编译的源文件的文件名</td>
-</tr>
-<tr>
-<td><strong>DATE</strong></td>
-<td>存储编译开始的日期</td>
-</tr>
-<tr>
-<td><strong>TIME</strong></td>
-<td>存储编译开始的时间</td>
-</tr>
-</tbody></table>
-<ul>
-<li>条件编译指令</li>
-</ul>
-<p>有几个指令可以用来有选择地对部分程序源代码进行编译，这个过程被称为条件编译。条件预处理器的结构与 if 选择结构很像。共有六种：#if、#else、#elif、#endif、#ifdef、#ifndef</p>
-<p>#if 指令类似于 if 条件语句，#else 指令类似于 else 条件语句，#elif 类似于 else if 条件语句，#endif 条件编译结束标识。</p>
-<p>语法如下：</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs vala"><span class="hljs-meta">#if 条件语句</span><br>	程序块<span class="hljs-number">1</span><br><span class="hljs-meta">#elif 条件语句</span><br>	程序块<span class="hljs-number">2</span><br><span class="hljs-meta">#else</span><br>	程序块<span class="hljs-number">3</span><br><span class="hljs-meta">#endif</span><br></code></pre></td></tr></table></figure>
-
-<p>#ifdef 定义了某宏定义标识符，#ifndef 没有定义某宏定义标识符。</p>
-<p>语法如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> 宏名称</span><br>	程序块<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
-
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">ifndef</span> 宏名称</span><br>	程序块<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
-
-<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h3><p>因为 C++ 中不存在 Java 中包的概念，对于不用库相同名称的函数、变量等无法区分，所以引入了命名空间的概念。</p>
-<p>语法如下：</p>
-<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-keyword">namespace</span> <span class="hljs-symbol">namespace_name</span>&#123;<br>	<span class="hljs-comment">// 程序块</span><br>&#125;<br></code></pre></td></tr></table></figure>
-
-<p>为了调用命名空间的函数或变量，需要在前面加上命名空间的名称</p>
-<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">namespace_name::code<br></code></pre></td></tr></table></figure>
-
-<p>您可以使用 using namespace 指令，这样在使用命名空间时就可以不用在前面加上命名空间的名称。这个指令会告诉编译器，后续的代码将使用指定的命名空间中的名称。</p>
-<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> <span class="hljs-keyword">namespace</span>_name;<br></code></pre></td></tr></table></figure>
-
 <h3 id="基准语法"><a href="#基准语法" class="headerlink" title="基准语法"></a>基准语法</h3><ul>
 <li>注释，和 Java 一致</li>
 </ul>
@@ -553,10 +476,108 @@
 </tr>
 </tbody></table>
 <h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><p>语法：</p>
-<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs abnf">返回数据类型 函数名(参数)&#123;<br>	程序语句块<span class="hljs-comment">;</span><br>	return 返回值<span class="hljs-comment">;</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs abnf">返回数据类型 函数名(参数 = 默认值)&#123;<br>	程序语句块<span class="hljs-comment">;</span><br>	return 返回值<span class="hljs-comment">;</span><br>&#125;<br></code></pre></td></tr></table></figure>
 
 <p>如：</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-keyword">int</span> a, <span class="hljs-keyword">int</span> b = <span class="hljs-number">3</span>)</span></span>&#123;<br>	<span class="hljs-keyword">return</span> a + b;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><font color=#FF8C00>有默认值的参数务必放置在参数行的尾端。</font></p>
+<p><font color=#FF8C00>C++ 从上往下编译程序代码，如果在前面调用了后定义的函数，则必须在调用前加声明。</font></p>
+<h3 id="预处理指令"><a href="#预处理指令" class="headerlink" title="预处理指令"></a>预处理指令</h3><p>C++ 程序在开始进行编译前会先进行一项预处理操作，将程序中那些以 # 符号开头的预处理指令进行特别的处理。预处理指令不会翻译为机器码，只在编译之前起作用。因为预处理指令不是 C++ 语句，所以并不需要以分号 “;” 结束。</p>
+<ul>
+<li>#define 宏定义指令<br>#define 是一种替换指令，可以用来定义宏名称，并且替换程序中的数值、字符串、程序语句或者函数。</li>
+</ul>
+<p>语法如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 常数值</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 <span class="hljs-meta-string">&quot;字符串&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 程序语句</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 函数名称</span><br></code></pre></td></tr></table></figure>
+
+<p>宏函数是一种可以传递参数来替换简单函数功能的宏。参数不需要指定类型。</p>
+<p>语法如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏函数名称(参数) 函数表达式</span><br></code></pre></td></tr></table></figure>
+
+<p>如果想要取消#define所声明的宏时，只要使用下面的语法声明即可。取消之后不可以再使用。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">undef</span> 宏名称</span><br></code></pre></td></tr></table></figure>
+
+<p>标准预处理宏</p>
+<table>
+<thead>
+<tr>
+<th>宏名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>LINE</strong></td>
+<td>正在编译的行在源文件的行号</td>
+</tr>
+<tr>
+<td><strong>FILE</strong></td>
+<td>被编译的源文件的文件名</td>
+</tr>
+<tr>
+<td><strong>DATE</strong></td>
+<td>存储编译开始的日期</td>
+</tr>
+<tr>
+<td><strong>TIME</strong></td>
+<td>存储编译开始的时间</td>
+</tr>
+</tbody></table>
+<ul>
+<li>#include 指令</li>
+</ul>
+<p>#include 指令也是一种宏命令，可以将指定的头文件包含到源文件中(类似于 Java 的 import)，实际上是用头文件中的声明替换，有两种指定方式。</p>
+<ol>
+<li>#include &lt;文件名&gt;<br>编译程序将到默认的系统目录中查找指定的文件，一般为系统文件</li>
+</ol>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cmath&gt;</span></span><br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>#inclide “”<br>编译程序将到当前程序文件的工作目录中查找指定的文件，一般为自定义文件</li>
+</ol>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&quot;people/&quot;</span></span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>条件编译指令</li>
+</ul>
+<p>有几个指令可以用来有选择地对部分程序源代码进行编译，这个过程被称为条件编译。条件预处理器的结构与 if 选择结构很像。共有六种：#if、#else、#elif、#endif、#ifdef、#ifndef</p>
+<p>#if 指令类似于 if 条件语句，#else 指令类似于 else 条件语句，#elif 类似于 else if 条件语句，#endif 条件编译结束标识。</p>
+<p>语法如下：</p>
+<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs vala"><span class="hljs-meta">#if 条件语句</span><br>	程序块<span class="hljs-number">1</span><br><span class="hljs-meta">#elif 条件语句</span><br>	程序块<span class="hljs-number">2</span><br><span class="hljs-meta">#else</span><br>	程序块<span class="hljs-number">3</span><br><span class="hljs-meta">#endif</span><br></code></pre></td></tr></table></figure>
+
+<p>#ifdef 如果定义了某宏定义标识符，#ifndef 如果没有定义某宏定义标识符。</p>
+<p>语法如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> 宏名称</span><br>	程序块<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">ifndef</span> 宏名称</span><br>	程序块<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
+
+<h3 id="头文件"><a href="#头文件" class="headerlink" title="头文件"></a>头文件</h3><p>通常在一个 C++ 程序中，包含两类文件——.cpp 文件和 .h 文件。.cpp 文件被称为 C++ 源文件，.h 文件被称为 C++ 头文件。</p>
+<p>C++ 语言支持“分别编译”，b.cpp 中想要调用 a.cpp 中定义的函数，并不需要知道 a.cpp 的存在，只需要添加 a.cpp 函数相对应的声明。定义只能定义一次，声明可以多次声明。</p>
+<p>如 a.cpp 中定义个一个 add 的函数</p>
 <figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-keyword">int</span> a, <span class="hljs-keyword">int</span> b)</span></span>&#123;<br>	<span class="hljs-keyword">return</span> a + b;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在 b.cpp 中可以这样使用</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-built_in">int</span> <span class="hljs-title">add</span>(<span class="hljs-params"><span class="hljs-built_in">int</span> a, <span class="hljs-built_in">int</span> b</span>)</span>; <span class="hljs-comment">//先声明</span><br><span class="hljs-keyword">add</span>(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>);<br></code></pre></td></tr></table></figure>
+
+<p>源文件中维护大量的声明特别麻烦，同时会带来多次声明的重复工作。一旦定义发生改变，需要修改的地方众多。</p>
+<p>所以，C++ 语言提出了头文件的概念。你只需要在头文件中声明一次，在实现文件中定义一次。在所有需要用的文件中，就只需要引用这个头文件，相当于每个文件都包含了一个声明。</p>
+<p>头文件中应该包含下面内容：</p>
+<ul>
+<li>类的声明(包含类里面的成员和方法)</li>
+<li>函数原型</li>
+<li>#define 常量</li>
+</ul>
+<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h3><p>因为 C++ 中不存在 Java 的 package 概念，对于不用库相同名称的函数、变量等无法区分，所以引入了命名空间的概念。</p>
+<p>语法如下：</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-keyword">namespace</span> <span class="hljs-symbol">namespace_name</span>&#123;<br>	<span class="hljs-comment">// 程序块</span><br>	code<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>为了调用命名空间的函数或变量，需要在前面加上命名空间的名称。</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">namespace_name::code<br></code></pre></td></tr></table></figure>
+
+<p>您可以使用 using namespace 指令，这样在使用命名空间时就可以不用在前面加上命名空间的名称。这个指令会告诉编译器，后续的代码将使用指定的命名空间中的名称。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> <span class="hljs-keyword">namespace</span>_name;<br>code;<br></code></pre></td></tr></table></figure>
+
+<h3 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h3><p>跟 Java 类似，语法如下：</p>
+<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs actionscript"><span class="hljs-keyword">try</span><br>&#123;<br>   <span class="hljs-comment">// 保护代码</span><br>&#125;<span class="hljs-keyword">catch</span>( ExceptionName e1 )<br>&#123;<br>   <span class="hljs-comment">// catch 块</span><br>&#125;<span class="hljs-keyword">catch</span>( ExceptionName e2 )<br>&#123;<br>   <span class="hljs-comment">// catch 块</span><br>&#125;<span class="hljs-keyword">catch</span>( ExceptionName eN )<br>&#123;<br>   <span class="hljs-comment">// catch 块</span><br>&#125;<br></code></pre></td></tr></table></figure>
             </div>
             <hr>
             <div>
