@@ -14,7 +14,7 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   
   <meta name="theme-color" content="#2f4154">
-  <meta name="description" content="NDk 采用 C/C++ 语言进行开发，所以学习 NDK 开发之前我们先来补充下必要的 C/C++ 知识。C++ 是对 C 语言的升级，C++ 程序设计语言可以归结为 C 程序设计语言的语法 + 面向对象程序设计，因此本课程只介绍 C++ 程序设计语言">
+  <meta name="description" content="NDK 采用 C/C++ 语言进行开发，所以学习 NDK 开发之前我们先来学习下必要的 C/C++ 知识。C++ 是对 C 语言的升级，C++ 程序设计语言可以归结为 C 程序设计语言的语法 + 面向对象程序设计，因此本课程只介绍 C++ 程序设计语言">
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
   
@@ -185,7 +185,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      2.3k 字
+      2.5k 字
     </span>
   
 
@@ -195,7 +195,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      27
+      29
        分钟
     </span>
   
@@ -228,7 +228,7 @@
             <h1 style="display: none">跟我一起学NDK-C++必知必会part1</h1>
             
             <div class="markdown-body">
-              <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>NDk 采用 C/C++ 语言进行开发，所以学习 NDK 开发之前我们先来补充下必要的 C/C++ 知识。C++ 是对 C 语言的升级，C++ 程序设计语言可以归结为 C 程序设计语言的语法 + 面向对象程序设计，因此本课程只介绍 C++ 程序设计语言。相信熟悉 Android 应用层开发的同学对于 Java 语言能够得心应手，本课程对于 C++ 程序设计语言的不少知识会用 Java 类推。</p>
+              <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>NDK 采用 C/C++ 语言进行开发，所以学习 NDK 开发之前我们先来补充下必要的 C/C++ 知识。C++ 是对 C 语言的升级，C++ 程序设计语言可以归结为 C 程序设计语言的语法 + 面向对象程序设计，因此本课程只介绍 C++ 程序设计语言。相信 Android 应用层开发的同学对于 Java 语言能够得心应手，本课程对于 C++ 程序设计语言的不少知识会用 Java 类推</p>
 <h3 id="基准语法"><a href="#基准语法" class="headerlink" title="基准语法"></a>基准语法</h3><ul>
 <li>注释，和 Java 一致</li>
 </ul>
@@ -288,7 +288,7 @@
 <td>2字节</td>
 </tr>
 </tbody></table>
-<p>sizeof() 函数可以获取数据类型的所占字节数</p>
+<p>sizeof() 函数可以获取各数据类型所占字节数</p>
 <h4 id="类型修饰符"><a href="#类型修饰符" class="headerlink" title="类型修饰符"></a>类型修饰符</h4><p>一些基本类型可以使用一个或多个类型修饰符进行修饰，修饰符修饰会改变所占内存大小</p>
 <ul>
 <li>signed</li>
@@ -344,6 +344,7 @@
 <p>语法：typedef type newname;</p>
 <figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs abnf">typedef int feet<span class="hljs-comment">;</span><br>feet age<span class="hljs-comment">;</span><br></code></pre></td></tr></table></figure>
 
+<p>定义了新类型 feet，使用和 int 一致</p>
 <p>其实 wchar_t 类型是这样来的</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">short</span> <span class="hljs-keyword">int</span> <span class="hljs-keyword">wchar_t</span><br></code></pre></td></tr></table></figure>
 
@@ -351,16 +352,16 @@
 <figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-built_in">int</span> age; <span class="hljs-comment">// 只定义</span><br><span class="hljs-built_in">int</span> diatance = <span class="hljs-number">1200</span>; <span class="hljs-comment">// 定义并赋值</span><br></code></pre></td></tr></table></figure>
 
 <h3 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h3><p>语法：const 数据类型 常量名 = 常量值;</p>
-<p>常量名一般用大写，运行时无法改变其数值。<font color=#FF8C00>如果申明时并未设置初始值，那么之后无法再设置数值</font></p>
+<p>常量名一般用大写，运行时无法改变其数值，<font color=#FF8C00>如果申明时并未设置初始值，那么之后无法再设置数值</font></p>
 <figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs processing"><span class="hljs-keyword">const</span> <span class="hljs-built_in">float</span> <span class="hljs-literal">PI</span> = <span class="hljs-number">3.1415</span>;<br></code></pre></td></tr></table></figure>
 
 <p>也可以使用<a href="#%E9%A2%84%E5%A4%84%E7%90%86%E6%8C%87%E4%BB%A4" title="标题">宏定义</a>的方式</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> PI 3.1415</span><br></code></pre></td></tr></table></figure>
 
-<h3 id="运算"><a href="#运算" class="headerlink" title="运算"></a>运算</h3><p>包括赋值运算、算术运算、比较运算、逻辑运算、递增递减运算以及位运算，这些运算都和 Java 一致。</p>
+<h3 id="运算"><a href="#运算" class="headerlink" title="运算"></a>运算</h3><p>包括赋值运算、算术运算、比较运算、逻辑运算、递增递减运算以及位运算，这些运算都和 Java 一致</p>
 <h3 id="数据类型转换"><a href="#数据类型转换" class="headerlink" title="数据类型转换"></a>数据类型转换</h3><h4 id="自动转换"><a href="#自动转换" class="headerlink" title="自动转换"></a>自动转换</h4><p>数值范围大的作为优先转换的对象，转换顺序如下：</p>
 <blockquote>
-<p>double &gt; float &gt; unsigned long &gt;  long &gt; unsigned int &gt; int</p>
+<p>double &lt;- float &lt;- unsigned long &lt;-  long &lt;- unsigned int &lt;- int</p>
 </blockquote>
 <h4 id="强制转换"><a href="#强制转换" class="headerlink" title="强制转换"></a>强制转换</h4><p>语法：(强制转换类型名称) 表达式或变量;</p>
 <figure class="highlight axapta"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs axapta"><span class="hljs-built_in">int</span> a, b, <span class="hljs-keyword">avg</span>;<br><span class="hljs-keyword">avg</span> = (float)(a + b) / <span class="hljs-number">2</span>;<span class="hljs-comment">//将 a+b 的值转换为浮点数再除以 2</span><br></code></pre></td></tr></table></figure>
@@ -392,9 +393,9 @@
 <p>如下，用 static_cast 将变量 two 从 double 类型转换为 int 类型</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">int</span> one = <span class="hljs-number">9</span>;<br><span class="hljs-keyword">double</span> two = <span class="hljs-number">7.6</span>;<br>one = one + <span class="hljs-keyword">static_cast</span>&lt;<span class="hljs-keyword">int</span>&gt;(two);<br></code></pre></td></tr></table></figure>
 
-<h3 id="流程控制结构"><a href="#流程控制结构" class="headerlink" title="流程控制结构"></a>流程控制结构</h3><p>包括顺序结构、选择结构(if else)、循环结构(for、while/do while)，都和 Java 一致。</p>
-<h3 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h3><h4 id="数组定义"><a href="#数组定义" class="headerlink" title="数组定义"></a>数组定义</h4><p>语法：数据类型 数组名[数组大小]; 或 数据类型 数组名[数组大小] = {值1,值2,…};</p>
-<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">int</span> scores[<span class="hljs-number">3</span>] = &#123;<span class="hljs-number">69</span>, <span class="hljs-number">71</span>, <span class="hljs-number">88</span>&#125;;<br></code></pre></td></tr></table></figure>
+<h3 id="流程控制结构"><a href="#流程控制结构" class="headerlink" title="流程控制结构"></a>流程控制结构</h3><p>包括顺序结构、选择结构(if else)、循环结构(for、while/do while)，都和 Java 一致</p>
+<h3 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h3><h4 id="数组定义"><a href="#数组定义" class="headerlink" title="数组定义"></a>数组定义</h4><p>语法：数据类型 数组名[数组大小]; 或 数据类型 数组名[] = {值1,值2,…};</p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs inform7">int score<span class="hljs-comment">[3]</span>;<br>score<span class="hljs-comment">[0]</span> = 69;<br>score<span class="hljs-comment">[1]</span> = 71;<br>score<span class="hljs-comment">[2]</span> = 88;<br>或<br>int scores<span class="hljs-comment">[3]</span> = &#123;69, 71, 88&#125;;<br></code></pre></td></tr></table></figure>
 
 <h4 id="数组赋值取值"><a href="#数组赋值取值" class="headerlink" title="数组赋值取值"></a>数组赋值取值</h4><p>语法：数组名[下标] = 值;</p>
 <figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">scores</span>[<span class="hljs-number">0</span>] = <span class="hljs-number">89</span>;<br></code></pre></td></tr></table></figure>
@@ -481,20 +482,22 @@
 <p>如：</p>
 <figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-keyword">int</span> a, <span class="hljs-keyword">int</span> b = <span class="hljs-number">3</span>)</span></span>&#123;<br>	<span class="hljs-keyword">return</span> a + b;<br>&#125;<br></code></pre></td></tr></table></figure>
 
-<p><font color=#FF8C00>有默认值的参数务必放置在参数行的尾端。</font></p>
-<p><font color=#FF8C00>C++ 从上往下编译程序代码，如果在前面调用了后定义的函数，则必须在调用前加声明。</font></p>
-<h3 id="预处理指令"><a href="#预处理指令" class="headerlink" title="预处理指令"></a>预处理指令</h3><p>C++ 程序在开始进行编译前会先进行一项预处理操作，将程序中那些以 # 符号开头的预处理指令进行特别的处理。预处理指令不会翻译为机器码，只在编译之前起作用。因为预处理指令不是 C++ 语句，所以并不需要以分号 “;” 结束。</p>
+<p><font color=#FF8C00>有默认值的参数务必放置在参数行的尾端</font></p>
+<p><font color=#FF8C00>C++ 从上往下编译程序代码，如果在前面调用了后定义的函数，则必须在调用前加声明</font></p>
+<h3 id="预处理指令"><a href="#预处理指令" class="headerlink" title="预处理指令"></a>预处理指令</h3><p>C++ 程序在开始进行编译前会先进行一项预处理操作，将程序中那些以 # 符号开头的预处理指令进行特别的处理。预处理指令不会翻译为机器码，只在编译之前起作用。因为预处理指令不是 C++ 语句，所以并不需要以分号 “;” 结束</p>
 <ul>
-<li>#define 宏定义指令<br>#define 是一种替换指令，可以用来定义宏名称，并且替换程序中的数值、字符串、程序语句或者函数。</li>
+<li>#define 宏定义指令<br>#define 是一种替换指令，可以用来定义宏名称，并且替换程序中的数值、字符串、程序语句或者函数</li>
 </ul>
 <p>语法如下：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 常数值</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 <span class="hljs-meta-string">&quot;字符串&quot;</span></span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 程序语句</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏名称 函数名称</span><br></code></pre></td></tr></table></figure>
 
-<p>宏函数是一种可以传递参数来替换简单函数功能的宏。参数不需要指定类型。</p>
+<p>宏函数是一种可以传递参数来替换简单函数功能的宏，参数不需要指定类型</p>
 <p>语法如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏函数名称(参数) 函数表达式</span><br></code></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> 宏函数名称(参数行) 函数表达式</span><br></code></pre></td></tr></table></figure>
 
-<p>如果想要取消#define所声明的宏时，只要使用下面的语法声明即可。取消之后不可以再使用。</p>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs reasonml">#define <span class="hljs-constructor">RESULT(<span class="hljs-params">r1</span>, <span class="hljs-params">r2</span>, <span class="hljs-params">h</span>)</span> (r1+r2)*h/<span class="hljs-number">2.0</span><br></code></pre></td></tr></table></figure>
+
+<p>如果想要取消 #define 所声明的宏时，只要使用下面的语法声明即可。取消之后不可以再使用</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">undef</span> 宏名称</span><br></code></pre></td></tr></table></figure>
 
 <p>标准预处理宏</p>
@@ -525,14 +528,14 @@
 <ul>
 <li>#include 指令</li>
 </ul>
-<p>#include 指令也是一种宏命令，可以将指定的头文件包含到源文件中(类似于 Java 的 import)，实际上是用头文件中的声明替换，有两种指定方式。</p>
+<p>#include 指令也是一种宏命令，可以将指定的<a href="#%E5%A4%B4%E6%96%87%E4%BB%B6">头文件</a>包含到源文件中(类似于 Java 的 import)，实际上是用头文件中的声明替换，有两种指定方式</p>
 <ol>
-<li>#include &lt;文件名&gt;<br>编译程序将到默认的系统目录中查找指定的文件，一般为系统文件</li>
+<li>#include &lt;文件名&gt;<br>编译程序将到默认的系统目录中查找指定的头文件，一般为系统头文件</li>
 </ol>
 <figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;cmath&gt;</span></span><br></code></pre></td></tr></table></figure>
 
 <ol start="2">
-<li>#inclide “”<br>编译程序将到当前程序文件的工作目录中查找指定的文件，一般为自定义文件</li>
+<li>#inclide “”<br>编译程序将到当前程序文件的工作目录中查找指定的头文件，一般为自定义头文件</li>
 </ol>
 <figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&quot;people/&quot;</span></span><br></code></pre></td></tr></table></figure>
 
@@ -540,42 +543,44 @@
 <li>条件编译指令</li>
 </ul>
 <p>有几个指令可以用来有选择地对部分程序源代码进行编译，这个过程被称为条件编译。条件预处理器的结构与 if 选择结构很像。共有六种：#if、#else、#elif、#endif、#ifdef、#ifndef</p>
-<p>#if 指令类似于 if 条件语句，#else 指令类似于 else 条件语句，#elif 类似于 else if 条件语句，#endif 条件编译结束标识。</p>
+<p>#if 指令类似于 if 条件语句，#else 指令类似于 else 条件语句，#elif 类似于 else if 条件语句，#endif 条件编译结束标识</p>
 <p>语法如下：</p>
 <figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs vala"><span class="hljs-meta">#if 条件语句</span><br>	程序块<span class="hljs-number">1</span><br><span class="hljs-meta">#elif 条件语句</span><br>	程序块<span class="hljs-number">2</span><br><span class="hljs-meta">#else</span><br>	程序块<span class="hljs-number">3</span><br><span class="hljs-meta">#endif</span><br></code></pre></td></tr></table></figure>
 
-<p>#ifdef 如果定义了某宏定义标识符，#ifndef 如果没有定义某宏定义标识符。</p>
+<p>#ifdef 如果定义了某宏定义标识符，#ifndef 如果没有定义某宏定义标识符</p>
 <p>语法如下：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">ifdef</span> 宏名称</span><br>	程序块<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
 
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">ifndef</span> 宏名称</span><br>	程序块<br><span class="hljs-meta">#<span class="hljs-meta-keyword">endif</span></span><br></code></pre></td></tr></table></figure>
 
-<h3 id="头文件"><a href="#头文件" class="headerlink" title="头文件"></a>头文件</h3><p>通常在一个 C++ 程序中，包含两类文件——.cpp 文件和 .h 文件。.cpp 文件被称为 C++ 源文件，.h 文件被称为 C++ 头文件。</p>
-<p>C++ 语言支持“分别编译”，b.cpp 中想要调用 a.cpp 中定义的函数，并不需要知道 a.cpp 的存在，只需要添加 a.cpp 函数相对应的声明。定义只能定义一次，声明可以多次声明。</p>
+<h3 id="头文件"><a href="#头文件" class="headerlink" title="头文件"></a>头文件</h3><p>通常在一个 C++ 程序中，包含两类文件——.cpp 文件和 .h 文件。.cpp 文件被称为 C++ 源文件，.h 文件被称为 C++ 头文件</p>
+<p>C++ 语言支持“分别编译”，b.cpp 中想要调用 a.cpp 中定义的函数，并不需要知道 a.cpp 的存在，只需要添加 a.cpp 函数相对应的声明。定义只能定义一次，声明可以多次声明</p>
 <p>如 a.cpp 中定义个一个 add 的函数</p>
 <figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs arduino"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">add</span><span class="hljs-params">(<span class="hljs-keyword">int</span> a, <span class="hljs-keyword">int</span> b)</span></span>&#123;<br>	<span class="hljs-keyword">return</span> a + b;<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <p>在 b.cpp 中可以这样使用</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-built_in">int</span> <span class="hljs-title">add</span>(<span class="hljs-params"><span class="hljs-built_in">int</span> a, <span class="hljs-built_in">int</span> b</span>)</span>; <span class="hljs-comment">//先声明</span><br><span class="hljs-keyword">add</span>(<span class="hljs-number">2</span>, <span class="hljs-number">3</span>);<br></code></pre></td></tr></table></figure>
 
-<p>源文件中维护大量的声明特别麻烦，同时会带来多次声明的重复工作。一旦定义发生改变，需要修改的地方众多。</p>
-<p>所以，C++ 语言提出了头文件的概念。你只需要在头文件中声明一次，在实现文件中定义一次。在所有需要用的文件中，就只需要引用这个头文件，相当于每个文件都包含了一个声明。</p>
+<p>源文件中维护大量的声明特别麻烦，同时会带来多次声明的重复工作。一旦定义发生改变，需要修改的地方众多</p>
+<p>所以 C++ 语言提出了头文件的概念。你只需要在头文件中声明一次，在实现文件中定义一次。在所有需要用的文件中，就只需要引用这个头文件，相当于每个文件都包含了一个声明</p>
 <p>头文件中应该包含下面内容：</p>
 <ul>
 <li>类的声明(包含类里面的成员和方法)</li>
 <li>函数原型</li>
 <li>#define 常量</li>
 </ul>
-<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h3><p>因为 C++ 中不存在 Java 的 package 概念，对于不用库相同名称的函数、变量等无法区分，所以引入了命名空间的概念。</p>
+<h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h3><p>因为 C++ 中不存在 Java 的 package 概念，对于不用库相同名称的函数、变量等无法区分，所以引入了命名空间的概念</p>
 <p>语法如下：</p>
 <figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs angelscript"><span class="hljs-keyword">namespace</span> <span class="hljs-symbol">namespace_name</span>&#123;<br>	<span class="hljs-comment">// 程序块</span><br>	code<br>&#125;<br></code></pre></td></tr></table></figure>
 
-<p>为了调用命名空间的函数或变量，需要在前面加上命名空间的名称。</p>
+<p>为了调用命名空间的函数或变量，需要在前面加上命名空间的名称</p>
 <figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">namespace_name::code<br></code></pre></td></tr></table></figure>
 
-<p>您可以使用 using namespace 指令，这样在使用命名空间时就可以不用在前面加上命名空间的名称。这个指令会告诉编译器，后续的代码将使用指定的命名空间中的名称。</p>
+<p>您可以使用 using namespace 指令，这样在使用命名空间时就可以不用在前面加上命名空间的名称。这个指令会告诉编译器，后续的代码将使用指定的命名空间中的名称</p>
 <figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs powershell"><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> <span class="hljs-keyword">namespace</span>_name;<br>code;<br></code></pre></td></tr></table></figure>
 
+<h3 id="extern-关键字"><a href="#extern-关键字" class="headerlink" title="extern 关键字"></a>extern 关键字</h3><p>extern可以置于变量或者函数前，以标示变量或者函数的定义在别的文件中，提示编译器遇到此变量和函数时在其他模块中寻找其定义，表明当前只是声明</p>
+<p>当 extern 和 “C” 一起使用的使用有其他含义，如: extern “C” void fun(int a, int b)。告诉编译器在编译 fun 这个函数名时按着 C 的规则去翻译相应的函数名而不是 C++ 的，C++ 的规则在翻译这个函数名时会把 fun 这个名字变得面目全非</p>
 <h3 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h3><p>跟 Java 类似，语法如下：</p>
 <figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs actionscript"><span class="hljs-keyword">try</span><br>&#123;<br>   <span class="hljs-comment">// 保护代码</span><br>&#125;<span class="hljs-keyword">catch</span>( ExceptionName e1 )<br>&#123;<br>   <span class="hljs-comment">// catch 块</span><br>&#125;<span class="hljs-keyword">catch</span>( ExceptionName e2 )<br>&#123;<br>   <span class="hljs-comment">// catch 块</span><br>&#125;<span class="hljs-keyword">catch</span>( ExceptionName eN )<br>&#123;<br>   <span class="hljs-comment">// catch 块</span><br>&#125;<br></code></pre></td></tr></table></figure>
             </div>
