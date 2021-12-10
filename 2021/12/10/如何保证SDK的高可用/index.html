@@ -1,0 +1,822 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;auto&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="SDK 作为第三方组件，对于客户来说是不太可控的。他们不清楚 SDK 内部的逻辑，也不可更改 SDK 的逻辑，一旦接入到自己的 APP 项目中，就相当于一个黑盒的存在。一旦这个 SDK 出现不可用情况，将会危及自己 APP 的正常运行，所以他们对于 SDK 的可用性是非常在意的。保证 SDK 的高可用也就成为 SDK 提供方的生命线">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+  <title>如何保证SDK的高可用 - 刘小帅的技术分享</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/github-gist.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.8.11","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"baidu":"564e6ca46bdc856d4e49ae6cbe3ff163","google":"G-1L1YKBGF7J","gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>刘小帅的博客</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('/img/banner_5.jpg') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="如何保证SDK的高可用">
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2021-12-10 14:41" pubdate>
+        2021年12月10日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      4.6k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      59
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">如何保证SDK的高可用</h1>
+            
+            <div class="markdown-body">
+              <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>SDK 作为第三方组件，对于客户来说是不太可控的。他们不清楚 SDK 内部的逻辑，也不可更改 SDK 的逻辑，一旦接入到自己的 APP 项目中，就相当于一个黑盒的存在。一旦这个 SDK 出现不可用情况，将会危及自己 APP 的正常运行，所以他们对于 SDK 的可用性是非常在意的。保证 SDK 的高可用也就成为 SDK 提供方的生命线<br>我这里用高可用而不用稳定性或者兼容性，因为我理解的高可用可以分为两块：</p>
+<ol>
+<li>SDK 的稳定性兼容性，也就是 SDK 的代码质量</li>
+<li>SDK 内部业务的高可用，不阻塞客户 APP 原本的正常流程</li>
+</ol>
+<h3 id="SDK-稳定性兼容性"><a href="#SDK-稳定性兼容性" class="headerlink" title="SDK 稳定性兼容性"></a>SDK 稳定性兼容性</h3><p>这块光靠开发人员来保证肯定是不行的，任何一个开发都无法保证自己写的代码就一定没有问题。早期我们依赖于客户反馈，客户反馈一个崩溃我们就解决一个。这带来两个问题：</p>
+<ol>
+<li>反馈的时间点不可控、提供的信息不可控，同时还存在很大的沟通成本。解决问题的及时性大打折扣，进而影响公司口碑</li>
+<li>没有整体的质量数据，对于自己来说也是个黑盒<br>基于这两点我们决定开发崩溃采集基础 SDK，包含 java 层崩溃采集和 ndk 层崩溃采集</li>
+</ol>
+<h4 id="Java-层崩溃采集"><a href="#Java-层崩溃采集" class="headerlink" title="Java 层崩溃采集"></a>Java 层崩溃采集</h4><p>Java 层崩溃采集原理比较简单，重置 Thread 的 DefaultUncaughtExceptionHandler</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">JavaCrashHandler</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Thread</span>.<span class="hljs-title">UncaughtExceptionHandler</span> </span>&#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Thread.UncaughtExceptionHandler mDefaultCrashHandler;<br><br>    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-title">JavaCrashHandler</span><span class="hljs-params">()</span> </span>&#123;<br><br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">initialize</span><span class="hljs-params">()</span> </span>&#123;<br>        mDefaultCrashHandler = Thread.getDefaultUncaughtExceptionHandler();<br>        Thread.setDefaultUncaughtExceptionHandler(<span class="hljs-keyword">this</span>);<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">uncaughtException</span><span class="hljs-params">(<span class="hljs-meta">@NonNull</span> Thread thread, <span class="hljs-meta">@NonNull</span> Throwable throwable)</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (mDefaultCrashHandler != <span class="hljs-keyword">null</span>) &#123;<br>            <span class="hljs-comment">// 设置异常处理器为默认的处理器</span><br>            Thread.setDefaultUncaughtExceptionHandler(mDefaultCrashHandler);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> JavaCrashHandler <span class="hljs-title">getInstance</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> JavaCrashHandlerHolder.INSTANCE;<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">JavaCrashHandlerHolder</span> </span>&#123;<br>        <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> JavaCrashHandler INSTANCE = <span class="hljs-keyword">new</span> JavaCrashHandler();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h5 id="整套采集的-UML-图"><a href="#整套采集的-UML-图" class="headerlink" title="整套采集的 UML 图"></a>整套采集的 UML 图</h5><p><img src="/img/crash_1.png" srcset="/img/loading.gif" lazyload></p>
+<h5 id="涉及的注意点"><a href="#涉及的注意点" class="headerlink" title="涉及的注意点"></a>涉及的注意点</h5><ol>
+<li>期望尽量立即上报<br>虽然方案中也提供了二次启动上报（依赖于堆栈文件存储）。我们知道崩溃会导致主线程退出，而上报是在子线程中进行的，这里就很大概率造成上报还没完成主线程已经退出了。这边利用 Thread.join(time) 尽量做到立即上报</li>
+</ol>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-keyword">private</span> <span class="hljs-built_in">void</span> <span class="hljs-function"><span class="hljs-title">report</span>(<span class="hljs-params">final <span class="hljs-built_in">String</span> filePath</span>)</span> &#123;<br>        Thread thread = <span class="hljs-keyword">new</span> Thread(<span class="hljs-keyword">new</span> <span class="hljs-function"><span class="hljs-title">Runnable</span>(<span class="hljs-params"></span>)</span> &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> <span class="hljs-function"><span class="hljs-title">run</span>(<span class="hljs-params"></span>)</span> &#123;<br>                <span class="hljs-comment">// 日志上传</span><br>            &#125;<br>        &#125;);<br>        thread.start();<br>        <span class="hljs-keyword">try</span> &#123;<br>            thread.join(3000L);<br>        &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>            Thread.currentThread().interrupt();<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>日志过滤<br>Thread 的 DefaultUncaughtExceptionHandler 会收集整个 APP 的崩溃，这对于我们有很大的干扰，同时也会增加上报平台的压力。理论上我们只关注 SDK 内部的崩溃，这里利用 packageName 过滤出我们想要的上报数据</li>
+</ol>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs less"><span class="hljs-variable">@Override</span><br>   public void uncaughtException(<span class="hljs-variable">@NonNull</span> Thread thread, <span class="hljs-variable">@NonNull</span> Throwable throwable) &#123;<br>       <span class="hljs-selector-tag">if</span> (mDefaultCrashHandler != null) &#123;<br>           <span class="hljs-comment">// 设置异常处理器为默认的处理器</span><br>           <span class="hljs-selector-tag">Thread</span><span class="hljs-selector-class">.setDefaultUncaughtExceptionHandler</span>(mDefaultCrashHandler);<br>       &#125;<br>       <span class="hljs-selector-tag">if</span> (Log.getStackTraceString(throwable).contains(PKG_NAME)) &#123;<br>           <span class="hljs-selector-tag">handleException</span>(thread, throwable);<br>       &#125;<br>   &#125;<br></code></pre></td></tr></table></figure>
+
+<p>但是这也只能过滤一大部分，试想一下下面的场景：SDK 中定义了一个接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">ClickEventListener</span> </span>&#123;<br>    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">onClick</span><span class="hljs-params">()</span></span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>APP 中设置了这个接口，并且在回调方法中发生了崩溃</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-built_in">this</span>.setClickEventListener(<span class="hljs-keyword">new</span> <span class="hljs-function"><span class="hljs-title">ClickEventListener</span>(<span class="hljs-params"></span>)</span>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> <span class="hljs-function"><span class="hljs-title">onClick</span>(<span class="hljs-params"></span>)</span> &#123;<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> RuntimeException(<span class="hljs-string">&quot;test java exception&quot;</span>);<br>    &#125;<br>&#125;)<br></code></pre></td></tr></table></figure>
+
+<p>这部分的崩溃数据目前的方案暂时无法过滤<br>整个方案依赖于 packageName，所以 packageName 一定不要混淆。在 proguard-rules.pro 中添加如下配置</p>
+<figure class="highlight ldif"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs ldif"><span class="hljs-comment"># 包名不混淆</span><br><span class="hljs-literal">-keeppackagenames package_name</span><br></code></pre></td></tr></table></figure>
+
+<p>为了防止客户再次混淆，可以把混淆规则带在打出的 aar 包上。具体可以参考 <a target="_blank" rel="noopener" href="https://liulingfeng.github.io/2021/07/06/proguard%E8%A7%84%E5%88%99/">混淆详解</a></p>
+<ol start="3">
+<li>崩溃日志向外抛出<br>SDK 崩溃采集的注册一般是后置的，整个崩溃链需要向外抛出，否则客户 APP 原本的 Java 层崩溃采集将失效</li>
+</ol>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs less"><span class="hljs-variable">@Override</span><br>    public void uncaughtException(<span class="hljs-variable">@NonNull</span> Thread thread, <span class="hljs-variable">@NonNull</span> Throwable throwable) &#123;<br>        <span class="hljs-selector-tag">if</span> (mDefaultCrashHandler != null) &#123;<br>            <span class="hljs-comment">// 设置异常处理器为默认的处理器</span><br>            <span class="hljs-selector-tag">Thread</span><span class="hljs-selector-class">.setDefaultUncaughtExceptionHandler</span>(mDefaultCrashHandler);<br>        &#125;<br>        <span class="hljs-selector-tag">if</span> (Log.getStackTraceString(throwable).contains(PKG_NAME)) &#123;<br>            <span class="hljs-selector-tag">handleException</span>(thread, throwable);<br>        &#125;<br>        <br>        <span class="hljs-selector-tag">if</span> (defaultHandler != null) &#123;<br>            <span class="hljs-comment">// 向外抛出</span><br>            <span class="hljs-selector-tag">defaultHandler</span><span class="hljs-selector-class">.uncaughtException</span>(thread, throwable);<br>        &#125; <span class="hljs-selector-tag">else</span> &#123;<br>            <span class="hljs-selector-tag">Process</span><span class="hljs-selector-class">.killProcess</span>(Process.myPid());<br>            <span class="hljs-selector-tag">System</span><span class="hljs-selector-class">.exit</span>(<span class="hljs-number">10</span>);<br>        &#125;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="日志还原"><a href="#日志还原" class="headerlink" title="日志还原"></a>日志还原</h5><p>上报的数据部分是混淆后的代码，这部分代码不还原不太容易看懂。代码的还原依赖于 mapping.txt 文件，每次发布出去的 SDK 版本都需要保留 mapping.txt 文件，mapping.txt 和版本对应不上将很可能解不出来。具体可以参考  <a target="_blank" rel="noopener" href="https://liulingfeng.github.io/2021/07/06/proguard%E8%A7%84%E5%88%99/">混淆详解</a></p>
+<h4 id="Ndk-层崩溃采集"><a href="#Ndk-层崩溃采集" class="headerlink" title="Ndk 层崩溃采集"></a>Ndk 层崩溃采集</h4><p>在 Android 平台上，Ndk 层崩溃采集一直是比较麻烦的问题。因为捕获麻烦，获取到的内部又不全，内容全了信息又不对，信息对了又不好处理，比 Java 层崩溃采集不知道麻烦多少倍<br>与 Java 不同，c/c++ 没有一个通用的异常处理入口。在 c 层，CPU 通过异常中断的方式触发异常处理流程。不同的处理器，有不同的异常中断类型和中断处理方式，linux 把这些中断处理，统一为信号量，每一种异常都有一个对应的信号量<br>所有的信号量都定义在 &lt;signal.h&gt; 文件中，这里列一下我们需要关注的信号量</p>
+<table>
+<thead>
+<tr>
+<th>信号量</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SIGABRT 6</td>
+<td>调用 abort 函数生成的信号，表示程序异常</td>
+</tr>
+<tr>
+<td>SIGBUS 7</td>
+<td>非法地址，包括内存地址对齐出错</td>
+</tr>
+<tr>
+<td>SIGFPE 8</td>
+<td>计算错误，比如除0、溢出</td>
+</tr>
+<tr>
+<td>SIGILL 4</td>
+<td>执行了非法指令</td>
+</tr>
+<tr>
+<td>SIGSEGV 11</td>
+<td>非法内存操作，如向没有写权限的地址写数据</td>
+</tr>
+<tr>
+<td>SIGTRAP 5</td>
+<td>断点时产生</td>
+</tr>
+<tr>
+<td>SIGSYS 31</td>
+<td>非法的系统调用</td>
+</tr>
+<tr>
+<td>SIGSTKFLT 16</td>
+<td>协处理器堆栈错误</td>
+</tr>
+</tbody></table>
+<ul>
+<li>可以注册回调函数处理需要关注的信号量</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 定义结构体 xcc_signal_crash_info_t</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>    <span class="hljs-keyword">int</span> sigNum; <span class="hljs-comment">// 信号量</span><br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sigaction</span> <span class="hljs-title">oldAct</span>;</span> <span class="hljs-comment">// 旧的处理方式</span><br>&#125; <span class="hljs-keyword">xcc_signal_crash_info_t</span>;<br><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">xcc_signal_crash_info_t</span> xcc_signal_crash_info[] =<br>        &#123;<br>                &#123;.sigNum = SIGABRT&#125;,<br>                &#123;.sigNum = SIGBUS&#125;,<br>                &#123;.sigNum = SIGFPE&#125;,<br>                &#123;.sigNum = SIGILL&#125;,<br>                &#123;.sigNum = SIGSEGV&#125;,<br>                &#123;.sigNum = SIGTRAP&#125;,<br>                &#123;.sigNum = SIGSYS&#125;,<br>                &#123;.sigNum = SIGSTKFLT&#125;<br>        &#125;;<br><span class="hljs-comment">// 所有关注的信号量注册回调函数</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">xcc_signal_crash_register</span><span class="hljs-params">(<span class="hljs-keyword">void</span> (*handler)(<span class="hljs-keyword">int</span>, <span class="hljs-keyword">siginfo_t</span> *, <span class="hljs-keyword">void</span> *))</span> </span>&#123;<br>    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sigaction</span> <span class="hljs-title">act</span>&#123;</span>&#125;;<br>    <span class="hljs-built_in">memset</span>(&amp;act, <span class="hljs-number">0</span>, <span class="hljs-built_in"><span class="hljs-keyword">sizeof</span></span>(act));<span class="hljs-comment">// 结构体内存清零</span><br>    act.sa_sigaction = handler;<br>    act.sa_flags = SA_RESTART | SA_SIGINFO | SA_ONSTACK;<br>    <span class="hljs-keyword">size_t</span> i;<br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-built_in"><span class="hljs-keyword">sizeof</span></span>(xcc_signal_crash_info) / <span class="hljs-built_in"><span class="hljs-keyword">sizeof</span></span>(xcc_signal_crash_info[<span class="hljs-number">0</span>]); i++) &#123;<br>            <span class="hljs-built_in">sigaction</span>(xcc_signal_crash_info[i].sigNum, &amp;act, &amp;(xcc_signal_crash_info[i].oldAct));<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">// 回调函数</span><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">xc_crash_signal_handler</span><span class="hljs-params">(<span class="hljs-keyword">int</span> sig, <span class="hljs-keyword">siginfo_t</span> *si, <span class="hljs-keyword">void</span> *uc)</span> </span>&#123;<br>&#125;<br><br><span class="hljs-comment">// 初始化注册</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">xc_crash_init</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-built_in">xcc_signal_crash_register</span>(xc_crash_signal_handler);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>核心是位于 &lt;signal.h&gt; 中的 sigaction 函数</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-built_in">int</span> <span class="hljs-title">sigaction</span>(<span class="hljs-params"><span class="hljs-built_in">int</span> __signal, <span class="hljs-keyword">const</span> <span class="hljs-keyword">struct</span> sigaction* __new_action, <span class="hljs-keyword">struct</span> sigaction* __old_action</span>)</span><br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>__signal</td>
+<td>表示关注的信号量</td>
+</tr>
+<tr>
+<td>__new_action</td>
+<td>结构体指针；用于声明当某个特定信号发生的时候，应该如何处理</td>
+</tr>
+<tr>
+<td>__old_action</td>
+<td>结构体指针；他表示的是默认处理方式，当我们自定义了信号量处理的时候，用他存储之前默认的处理方式</td>
+</tr>
+</tbody></table>
+<p>循环给关注的信号量注册回调函数。这样每次发生崩溃的时候就会回调我们传入的 xc_crash_signal_handler 函数</p>
+<ul>
+<li> 获取错误信号和寄存器信息</li>
+</ul>
+<p>来看下回调函数中三个参数的含义</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>sig</td>
+<td>中断的信号量</td>
+</tr>
+<tr>
+<td>siginfo_t</td>
+<td>信号量信息的结构体指针</td>
+</tr>
+<tr>
+<td>uc</td>
+<td>是 uc_mcontext 的结构体指针，它封装了 cpu 的上下文</td>
+</tr>
+</tbody></table>
+<p>通过结构体指针 siginfo_t 可以获取信号量的以下信息</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>si_signo</td>
+<td>中断信号量</td>
+</tr>
+<tr>
+<td>si_code</td>
+<td>中断信号 code</td>
+</tr>
+<tr>
+<td>si_addr</td>
+<td>错误发生的地址</td>
+</tr>
+<tr>
+<td>si_pid</td>
+<td>发送信号的进程 id</td>
+</tr>
+<tr>
+<td>si_uid</td>
+<td>发送信号的用户 id</td>
+</tr>
+</tbody></table>
+<p>uc_mcontext 结构体指针中封装了 cpu 的上下文，包括当前线程的寄存器信息和崩溃时的 pc 值，能够知道崩溃时的 pc 值，就能知道崩溃时执行的那条指令。uc_mcontext 定义是平台相关的，比如我们熟知的 arm、arm64、x86。用宏定义大法就能获取当前 cpu 架构的寄存器信息</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><code class="hljs perl">static void xc_fallback_get_regs(ucontext_t *<span class="hljs-keyword">uc</span>) &#123;<br><span class="hljs-comment">#if defined(__arm__)</span><br>    LOGE(<span class="hljs-string">&quot;r0  %d  r1 %d  r2  %d  r3  %d\n&quot;</span><br>         <span class="hljs-string">&quot;r4  %d  r5 %d  r6  %d  r7  %d\n&quot;</span><br>         <span class="hljs-string">&quot;r8  %d  r9 %d  r10  %d  r11  %d\n&quot;</span><br>         <span class="hljs-string">&quot;ip  %d  sp %d  lr  %d  pc  %d\n&quot;</span>,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r<span class="hljs-number">0</span>,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r1,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r2,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r3,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r4,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r5,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r6,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r7,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r8,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r9,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_r1<span class="hljs-number">0</span>,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_fp,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_ip,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_sp,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_lr,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.arm_pc);<br><span class="hljs-comment">#elif defined(__aarch64__)</span><br>    LOGE(<span class="hljs-string">&quot;x0  %d  x1 %d  x2  %d  x3  %d\n&quot;</span><br>         <span class="hljs-string">&quot;x4  %d  x5 %d  x6  %d  x7  %d\n&quot;</span><br>         <span class="hljs-string">&quot;x8  %d  x9 %d  x10  %d  x11  %d\n&quot;</span><br>         <span class="hljs-string">&quot;x12  %d  x13 %d  x14  %d  x15  %d\n&quot;</span><br>         <span class="hljs-string">&quot;x16  %d  x17 %d  x18  %d  x19  %d\n&quot;</span><br>         <span class="hljs-string">&quot;x20  %d  x21 %d  x22  %d  x23  %d\n&quot;</span><br>         <span class="hljs-string">&quot;x24  %d  x25 %d  x26  %d  x27  %d\n&quot;</span><br>         <span class="hljs-string">&quot;x28  %d  x29 %d\n&quot;</span><br>         <span class="hljs-string">&quot;sp  %d  lr  %d pc %d\n&quot;</span>,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">0</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">1</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">2</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">3</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">4</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">5</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">6</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">7</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">8</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">9</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">10</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">11</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">12</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">13</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">14</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">15</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">16</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">17</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">18</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">19</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">20</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">21</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">22</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">23</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">24</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">25</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">26</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">27</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">28</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">29</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.sp,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.regs[<span class="hljs-number">30</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.pc);<br><span class="hljs-comment">#elif defined(__x86_64__)</span><br>    LOGE(<span class="hljs-string">&quot;rax  %d  rbx %d  rcx  %d  rdx  %d\n&quot;</span><br>         <span class="hljs-string">&quot;r8  %d  r9 %d  r10  %d  r11  %d\n&quot;</span><br>         <span class="hljs-string">&quot;r12  %d  r13 %d  r14  %d  r15  %d\n&quot;</span><br>         <span class="hljs-string">&quot;rdi  %d  rsi %d\n&quot;</span><br>         <span class="hljs-string">&quot;rbp  %d  rsp %d  rip  %d\n&quot;</span>,<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RAX],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RBX],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RCX],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RDX],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_R8],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_R9],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_R1<span class="hljs-number">0</span>],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_R11],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_R12],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_R13],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_R14],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_R15],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RDI],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RSI],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RBP],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RSP],<br>         <span class="hljs-keyword">uc</span>-&gt;uc_mcontext.gregs[REG_RIP]);<br><span class="hljs-comment">#endif</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-comment">// 回调函数</span><br>static void xc<span class="hljs-constructor">_crash_signal_handler(<span class="hljs-params">int</span> <span class="hljs-params">sig</span>, <span class="hljs-params">siginfo_t</span> <span class="hljs-operator">*</span><span class="hljs-params">si</span>, <span class="hljs-params">void</span> <span class="hljs-operator">*</span><span class="hljs-params">uc</span>)</span> &#123;<br>    <span class="hljs-constructor">LOGE(<span class="hljs-string">&quot;signal: %d&quot;</span>, <span class="hljs-params">si</span>-&gt;<span class="hljs-params">si_signo</span>)</span>;<br>    <span class="hljs-constructor">LOGE(<span class="hljs-string">&quot;code: %d&quot;</span>, <span class="hljs-params">si</span>-&gt;<span class="hljs-params">si_code</span>)</span>;<br>    <span class="hljs-constructor">LOGE(<span class="hljs-string">&quot;addr: %p&quot;</span>, <span class="hljs-params">si</span>-&gt;<span class="hljs-params">si_addr</span>)</span>;<br><br>    xc<span class="hljs-constructor">_fallback_get_regs((<span class="hljs-params">ucontext_t</span> <span class="hljs-operator">*</span>)</span> uc);<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>获取函数调用栈</li>
+</ul>
+<p>获取堆栈信息比较麻烦，需要综合多种方案。常见的做法有四种：</p>
+<ol>
+<li>直接使用系统的 &lt;unwind.h&gt; 库，可以直接获取错误文件和函数名。需要自己解析函数符号，同时经常会捕获到系统错误，需要手动过滤</li>
+<li>在 4.1-4.4，使用系统自带的 libcorkscrew.so。5.0 开始，系统中没有了 libcorkscrew.so，可以自己编译系统源码中的 libunwind</li>
+<li>使用开源库 coffeecatch，这种方法不能百分之百兼容所有机型</li>
+<li>使用 Google 的 breakpad，这是所有 c/c++ 堆栈获取的权威方案。只不过这个库是全平台的，所以非常大，使用时需要把无关的平台剥离</li>
+</ol>
+<ul>
+<li>当然还可以获取线程信息、内存信息等等，有用信息越多越有利于排查</li>
+</ul>
+<h5 id="涉及的注意点-1"><a href="#涉及的注意点-1" class="headerlink" title="涉及的注意点"></a>涉及的注意点</h5><ol>
+<li>以上获取到的 pc 值是程序加载到内存中的十进制绝对地址，绝对地址不能直接使用。需要通过 dladdr 函数获取偏移地址，偏移地址才能用 addr2line 分析出是哪一行代码</li>
+</ol>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs armasm"><span class="hljs-symbol">Dl_info</span> <span class="hljs-meta">info</span><span class="hljs-comment">;</span><br><span class="hljs-symbol">if</span> (dladdr((void *) <span class="hljs-built_in">pc</span>, &amp;<span class="hljs-meta">info</span>) &amp;&amp; <span class="hljs-meta">info</span>.dli_fname) &#123;<br>    uintptr_t dli_relative = <span class="hljs-built_in">pc</span> - (uintptr_t) <span class="hljs-meta">info</span>.dli_fbase<span class="hljs-comment">;</span><br>    LOGE(<span class="hljs-string">&quot;偏移地址: %zu&quot;</span>, dli_relative)<span class="hljs-comment">;</span><br>    LOGE(<span class="hljs-string">&quot;so共享库的文件名: %s&quot;</span>, <span class="hljs-meta">info</span>.dli_fname)<span class="hljs-comment">;</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<ol start="2">
+<li>日志上报放在应用层做<br>日志上报放在 java 层，上报的那部分代码可以复用。需要在 java 层添加一个 callback 的钩子，c++ 层日志文件记录完成调用这个钩子</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.netease.nis.myapplication;<br><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">NativeHandler</span> </span>&#123;<br>    <span class="hljs-meta">@SuppressWarnings(&quot;unused&quot;)</span><br>    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">crashCallback</span><span class="hljs-params">(String logPath)</span> </span>&#123;<br>       <br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs livescript"><span class="hljs-keyword">static</span> <span class="hljs-literal">void</span> xc_crash_init_callback(JNIEnv *env) &#123;<br>    jclass xc_common_cb_class = env-&gt;FindClass(<span class="hljs-string">&quot;com/netease/nis/myapplication/NativeHandler&quot;</span>);<br>    <span class="hljs-keyword">if</span> (xc_common_cb_class == nullptr) &#123;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    jmethodID xc_crash_cb_method = env-&gt;GetStaticMethodID(xc_common_cb_class, <span class="hljs-string">&quot;crashCallback&quot;</span>,<br>                                                          <span class="hljs-string">&quot;(Ljava/lang/String;)V&quot;</span>);<br>    <span class="hljs-keyword">if</span> (xc_crash_cb_method == nullptr) &#123;<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    jstring file_path = env-&gt;NewStringUTF(<span class="hljs-string">&quot;file_path&quot;</span>);<br>    env-&gt;CallStaticVoidMethod(xc_common_cb_class, xc_crash_cb_method, file_path);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>日志过滤<br>注册信号量回调函数同样会上报整个 APP 的 Ndk 层崩溃，我们只关注 SDK 内部的 Ndk 层崩溃。因为我们上报的日志中同时会包含调用 Ndk 函数的 java 层入口堆栈，所以我们同样可以用 packageName 过滤的方式。为了防止 Ndk 内部崩溃没有 java 堆栈，我们添加关注的 so 名字作为辅助</p>
+</li>
+<li><p>崩溃日志向外抛出<br>SDK 崩溃采集的注册一般是后置的，整个崩溃链需要向外抛出。我们给信号量注册回调函数的时候是存储了之前默认的处理方式的，在 xc_crash_signal_handler 中我们需要反注册将崩溃向外抛出</p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">// 反注册</span><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">xcc_signal_crash_unregister</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-keyword">size_t</span> i;<br>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-built_in"><span class="hljs-keyword">sizeof</span></span>(xcc_signal_crash_info) / <span class="hljs-built_in"><span class="hljs-keyword">sizeof</span></span>(xcc_signal_crash_info[<span class="hljs-number">0</span>]); i++) &#123;<br>        <span class="hljs-built_in">sigaction</span>(xcc_signal_crash_info[i].sigNum, &amp;(xcc_signal_crash_info[i].oldAct), <span class="hljs-literal">nullptr</span>);<br>    &#125;<br>&#125;<br><span class="hljs-comment">// 回调函数</span><br><span class="hljs-function"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">xc_crash_signal_handler</span><span class="hljs-params">(__unused <span class="hljs-keyword">int</span> sig, <span class="hljs-keyword">siginfo_t</span> *si, <span class="hljs-keyword">void</span> *uc)</span> </span>&#123;<br>    <span class="hljs-built_in">xcc_signal_crash_unregister</span>();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>信息尽量精简，不浪费服务器资源</li>
+</ol>
+<h5 id="日志还原-1"><a href="#日志还原-1" class="headerlink" title="日志还原"></a>日志还原</h5><p>一个完整的 so 由 c 代码加一些 debug 信息组成。这些 debug 信息会记录 so 中所有方法的对照表，也就是符号表（可以类比于 java 的 mapping.txt）。这种 so 叫做未 strip的，通常体积会比较大。一般 release 的 so 都需要经过 strip，经过 strip 之后 so 中的 debug 信息会被剥离，体积会小很多。一般我们对外发布的 so 都是经过 strip 之后的<br>其实 gradle build 的过程中会生成 strip 前后的 so，不需要我们额外做什么操作</p>
+<p><img src="/img/crash_2.png" srcset="/img/loading.gif" lazyload></p>
+<p><img src="/img/crash_3.png" srcset="/img/loading.gif" lazyload></p>
+<p>Cmake 中的是未 strip 的，stripped_native_libs 中的是经过 strip 的。mac 可以用 file 命令来检测 so 是否经过 strip，结尾是 not stripped 就是未经过 strip 的 so</p>
+<p><img src="/img/crash_4.png" srcset="/img/loading.gif" lazyload></p>
+<p>带 debug 信息的 so 用于还原日志，所以每次发布版本都必须保留一份各个 cpu 架构带 debug 信息的 so。或者也可以直接把符号表剥离出来</p>
+<p>下面来看一份完整的上报日志</p>
+<p><img src="/img/crash_5.png" srcset="/img/loading.gif" lazyload></p>
+<p>初看难以理解，其实上报的日志还是有一定规律的</p>
+<ul>
+<li>首先是一些环境信息，其中 ABI list 是必须的，也就是发生崩溃的手机的 cpu 架构。不同 cpu 架构的手机需要用不同架构的 so 还原</li>
+<li>Pid 是进程信息</li>
+<li>Signal 是错误信号，大概能知道是哪种类型的错误</li>
+<li>Backtrace 是堆栈信息，这部分是我们最应该关注的</li>
+</ul>
+<p>从日志中只能看到偏移地址，比 java 混淆后的代码还难以理解。我们得从偏移地址中解出具体的代码位置。下面介绍两种工具</p>
+<ol>
+<li>addr2line 工具，位于 Ndk 目录下（位于 Android sdk 路径下）</li>
+</ol>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs awk">cd NDK_VERSION<span class="hljs-regexp">/toolchains/</span>abi<span class="hljs-regexp">/prebuilt/</span>darwin-x86_64/bin <br>./aarch64-linux-android-addr2line -C -f -e debug.so address<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NDK_VERSION</td>
+<td>编译 so 时候的 ndk 版本</td>
+</tr>
+<tr>
+<td>abi</td>
+<td>对应的 cpu 架构，上方日志表明是 arm64</td>
+</tr>
+<tr>
+<td>-C -f</td>
+<td>打印错误所在的函数</td>
+</tr>
+<tr>
+<td>-e</td>
+<td>打印错误地址的对应路径及行数</td>
+</tr>
+<tr>
+<td>debug.so</td>
+<td>对应 cpu 架构带符号表的 so</td>
+</tr>
+<tr>
+<td>address</td>
+<td>Backtrace 中的偏移地址，如 00009296</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li>Ndk-stack 工具，同样位于 Ndk 目录下</li>
+</ol>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs gradle">adb logcat | NDK_VERSION/ndk-stack -sym abi -<span class="hljs-keyword">dump</span> <span class="hljs-keyword">dump</span>.txt<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NDK_VERSION</td>
+<td>编译 so 时候的 ndk 版本</td>
+</tr>
+<tr>
+<td>abi</td>
+<td>对应 cpu 架构带符号表的 abi 文件夹，如 armeabi-v7a</td>
+</tr>
+<tr>
+<td>dump.txt</td>
+<td>错误日志文件/一般把上报的日志拷贝到文件中</td>
+</tr>
+</tbody></table>
+<h5 id="跨团队跨部门合作"><a href="#跨团队跨部门合作" class="headerlink" title="跨团队跨部门合作"></a>跨团队跨部门合作</h5><p>Ndk 层崩溃定位另一个麻烦的点是可能涉及到跨团队跨部门合作，比如活体检测 SDK Ndk 层大部分的代码是算法团队写的。我们梳理了团队合作的问题分配或者说合作模式</p>
+<p><img src="/img/crash_6.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>经验：</p>
+<ul>
+<li>最好在客户 APP 中测试，很多问题在 demo 中并不好复现</li>
+<li>把技术赋能给其他团队同事，把自己释放出来干其他更重要的事。当然移动端提供协助是不可避免的，这是移动端的属性决定的</li>
+</ul>
+<h4 id="可视化平台"><a href="#可视化平台" class="headerlink" title="可视化平台"></a>可视化平台</h4><p>数据采集完之后就要搭建可视化平台了，说白了就是要搭建类似于 bugly 一样的平台便于开发人员操作</p>
+<h3 id="内部业务高可用"><a href="#内部业务高可用" class="headerlink" title="内部业务高可用"></a>内部业务高可用</h3><p>在我看来单纯的保证 SDK 的稳定性兼容性是远远不够的，还得保证尽量不影响客户 APP 原本的正常流程。细想一下有些 SDK 其实是很前置的，比如我们的活体检测 SDK，用户只有在活体检测流程通过之后才能走后面的流程。而 SDK 运行的环境是不可控的，任何一个节点的异常都有可能导致用户无法向下进行。所以要保证 SDK 内部业务的高可用其实是更加困难的<br>为了保证业务的高可用我们进行了如下工作：</p>
+<h4 id="打印各流程节点耗时"><a href="#打印各流程节点耗时" class="headerlink" title="打印各流程节点耗时"></a>打印各流程节点耗时</h4><p>Debug 环境打印各流程节点耗时，以此为依据尽量缩短各流程节点的耗时</p>
+<h4 id="多域名重试机制"><a href="#多域名重试机制" class="headerlink" title="多域名重试机制"></a>多域名重试机制</h4><p>针对海外布局的产品可能服务器的稳定性比较差，我们加了多域名重试机制尽可能的提高接口的稳定性</p>
+<h4 id="全链路埋点"><a href="#全链路埋点" class="headerlink" title="全链路埋点"></a>全链路埋点</h4><p>梳理 SDK 内部业务的所有流程节点，拿活体检测 SDK 为例</p>
+<p><img src="/img/crash_7.jpg" srcset="/img/loading.gif" lazyload></p>
+<p>在各个节点加数据埋点，这个过程一定要细致。通过上报的数据来分析哪些节点比较容易出问题</p>
+<h4 id="降级处理"><a href="#降级处理" class="headerlink" title="降级处理"></a>降级处理</h4><p>针对于比较容易出问题的节点客户端做降级处理，服务端来保证整个流程的安全性。比如本地动作检测不容易通过就降级本地检测动作的数量或者阈值</p>
+<h3 id="其他建议"><a href="#其他建议" class="headerlink" title="其他建议"></a>其他建议</h3><ul>
+<li>回调中千万不要包含空指针参数，客户使用不可控</li>
+<li>在不阻碍业务流程的基础上合理加 try catch</li>
+<li>错误原信息正确清晰得返回给客户，最好容易理解</li>
+<li>Demo 也需要好好打磨，客户会或多或少参考 demo 中的代码</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>要持续保持 SDK 的高可用还有很长的路要有，上面的一些方案也还有不少优化空间，共勉</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/%E5%B4%A9%E6%BA%83%E9%87%87%E9%9B%86/">崩溃采集</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%B4%A9%E6%BA%83%E9%87%87%E9%9B%86/">崩溃采集</a>
+                    
+                      <a class="hover-with-bg" href="/tags/NDK/">NDK</a>
+                    
+                      <a class="hover-with-bg" href="/tags/SDK/">SDK</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/07/30/Unity%E6%8E%A5%E5%85%A5Android%20%E5%8E%9F%E7%94%9FSDK/">
+                        <span class="hidden-mobile">Unity接入Andrioid原生SDK</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"URbh2NVSvj6oGrg2v5ToH7Ap-gzGzoHsz","appKey":"xYISLvS5bVhfmHCz0aJ57LiM","placeholder":"说点什么","path":"window.location.pathname","avatar":"retro","meta":["nick","mail","link"],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false,"requiredFields":[]},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12/lib/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var title = document.getElementById('subtitle').title;
+      
+      typing(title)
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <!-- Baidu Analytics -->
+    <script defer>
+      var _hmt = _hmt || [];
+      (function () {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?564e6ca46bdc856d4e49ae6cbe3ff163";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+      })();
+    </script>
+  
+
+  
+    <!-- Google Analytics -->
+    <script defer>
+      window.ga = window.ga || function () { (ga.q = ga.q || []).push(arguments) };
+      ga.l = +new Date;
+      ga('create', 'G-1L1YKBGF7J', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <script async src='https://www.google-analytics.com/analytics.js'></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

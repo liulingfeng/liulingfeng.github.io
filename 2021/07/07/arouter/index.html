@@ -236,7 +236,7 @@
 <p><a target="_blank" rel="noopener" href="https://github.com/alibaba/ARouter">https://github.com/alibaba/ARouter</a></p>
 <h4>来讲一下项目结构：</h4>
 
-<p><img src="https://user-gold-cdn.xitu.io/2019/11/12/16e5e8e3486c4a3f?w=462&h=474&f=png&s=53929" srcset="/img/loading.gif" lazyload></p>
+<p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/11/12/16e5e8e3486c4a3f~tplv-t2oaga2asx-image.image" srcset="/img/loading.gif" lazyload></p>
 <ul>
 <li>app:项目主工程，演示代码</li>
 <li>module-java：java演示代码</li>
@@ -266,7 +266,7 @@
 <h4>下面正式讲解api</h4>
 先整体感受一下整个流程<br>
 
-<p><img src="https://user-gold-cdn.xitu.io/2019/11/20/16e88ab7c09ec391?w=1088&h=1287&f=png&s=117461" srcset="/img/loading.gif" lazyload><br>根据官方说明，首先在Application中调用如下api</p>
+<p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/11/20/16e88ab7c09ec391~tplv-t2oaga2asx-image.image" srcset="/img/loading.gif" lazyload><br>根据官方说明，首先在Application中调用如下api</p>
 <figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs reasonml"><span class="hljs-keyword">if</span>(BuildConfig.DEBUG)&#123;<br>           <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span><span class="hljs-keyword">open</span><span class="hljs-constructor">Log()</span>;<span class="hljs-comment">//打开日志</span><br>           <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span><span class="hljs-keyword">open</span><span class="hljs-constructor">Debug()</span>;<span class="hljs-comment">//打开路由调试</span><br>       &#125;<br><span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">ARouter</span>.</span></span>init(this);<br></code></pre></td></tr></table></figure>
 
 <p>进入Arouter.init(this)</p>
